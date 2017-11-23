@@ -1,7 +1,7 @@
 package com.github.mousesrc.jblockly.fx;
 
-import com.github.mousesrc.jblockly.api.BlockContainer;
+import javafx.scene.control.Control;
 
-public class FXBlockWorkspace implements BlockContainer{
+public class FXBlockWorkspace extends Control{
 
 }
