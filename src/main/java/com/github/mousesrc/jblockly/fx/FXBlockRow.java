@@ -12,7 +12,9 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.geometry.Point2D;
+import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -88,6 +90,10 @@ public class FXBlockRow extends Control implements BlockRow,BlockWorkspaceHolder
 			}
 		});
 	}
+	
+	public final FXBlock getParentBlock(){
+		return (FXBlock) getParent();
+	}
 
 	@Override
 	public Optional<Block> getBlock() {
@@ -101,9 +107,14 @@ public class FXBlockRow extends Control implements BlockRow,BlockWorkspaceHolder
 	}
 	
 	@Override
-	public boolean connect(FXBlock block, Point2D point) {
+	public boolean connect(FXBlock block, Bounds bounds) {
 		// TODO 自动生成的方法存根
 		return false;
+	}
+	
+	@Override
+	public ObservableList<Node> getChildren() {
+		return super.getChildren();
 	}
 	
 	@Override

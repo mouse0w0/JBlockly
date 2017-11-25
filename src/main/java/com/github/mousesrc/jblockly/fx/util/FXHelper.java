@@ -1,5 +1,7 @@
 package com.github.mousesrc.jblockly.fx.util;
 
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -21,5 +23,9 @@ public interface FXHelper {
 		Window window = scene.getWindow();
 		return new Point2D(localToScene.getX() + scene.getX() + window.getX(),
 				localToScene.getY() + scene.getY() + window.getY());
+	}
+	
+	static Bounds subtractBounds2D(Bounds bounds, double x, double y) {
+		return new BoundingBox(bounds.getMinX() - x, bounds.getMinY() - y, bounds.getWidth(), bounds.getHeight());
 	}
 }

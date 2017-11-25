@@ -1,8 +1,8 @@
 package com.github.mousesrc.jblockly.fx;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockRow;
 import com.github.mousesrc.jblockly.fx.skin.FXBlockSkin;
@@ -19,13 +19,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
 
@@ -86,9 +89,7 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableArrayList();
-	private final List<BlockRow> rows = new LinkedList<>();
-	private final List<BlockRow> unmodifiableRows = Collections.unmodifiableList(rows);
+	private final SVGPath dragSVGPath = new SVGPath();
 	
 	private static final String DEFAULT_STYLE_CLASS = "block";
 	
@@ -97,7 +98,6 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 		
 		initWorkspaceListener();
 		initBlockDragListener();
-		initRowsListener();
 		
 		setPickOnBounds(false); // 启用不规则图形判断,具体见contains方法
 	}
@@ -139,7 +139,7 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 			
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace != null)
-				getWorkspace().connect(this,getConnectionPoint());
+				getWorkspace().connect(this, getConnectionBounds());
 		});
 	}
 	
@@ -151,20 +151,8 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 				BlockWorkspaceHolder holder = (BlockWorkspaceHolder)newValue;
 				setWorkspace(holder.workspaceProperty().get());
 				holder.workspaceProperty().addListener(workspaceListener);
-			}
-		});
-	}
-	
-	private void initRowsListener(){
-		getFXRows().addListener(new ListChangeListener<FXBlockRow>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FXBlockRow> c) {
-				while(c.next()){
-					rows.addAll(c.getAddedSubList());
-					rows.removeAll(c.getRemoved());
-				}
-				requestLayout();
+			}else{
+				setWorkspace(null);
 			}
 		});
 	}
@@ -180,21 +168,29 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 		}
 	}
 	
-	public Point2D getConnectionPoint() {
+	public void removeBlock(){
+		Parent parent = getParent();
+		if(parent instanceof FXBlockRow)
+			((FXBlockRow) parent).setBlock(null);
+		else if (parent instanceof FXBlockWorkspace)
+			((FXBlockWorkspace) parent).getBlocks().remove(this);
+	}
+	
+	public Bounds getConnectionBounds(){
 		final double x = getLayoutX(), y = getLayoutY();
 		switch (getConnectionType()) {
 		case TOP:
-		case TOP_AND_BOTTOM:
-			return new Point2D(x + NEXT_OFFSET_X + NEXT_WIDTH / 2, y - 2.5);
+			return new BoundingBox(x + TOP_OFFSET_X , y, TOP_WIDTH, TOP_HEIGHT);
 		case LEFT:
-			return new Point2D(x - 2.5, y + INSERT_OFFSET_Y + INSERT_HEIGHT / 2);
+			return new BoundingBox(x, y + LEFT_OFFSET_Y, LEFT_WIDTH , LEFT_HEIGHT);
 		default:
 			return null;
 		}
 	}
 	
-	public ObservableList<FXBlockRow> getFXRows() {
-		return fxRows;
+	@Override
+	public ObservableList<Node> getChildren() {
+		return super.getChildren();
 	}
 	
 	@Override
@@ -204,14 +200,30 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 
 	@Override
 	public List<BlockRow> getRows() {
-		return unmodifiableRows;
+		return getChildren().stream()
+				.filter(node->node instanceof BlockRow)
+				.map(node->(BlockRow)node)
+				.collect(Collectors.toList());
+	}
+	
+	public List<FXBlockRow> getFXRows() {
+		return getChildren().stream()
+				.filter(node->node instanceof FXBlockRow)
+				.map(node->(FXBlockRow)node)
+				.collect(Collectors.toList());
 	}
 	
 	@Override
-	public boolean connect(FXBlock block, Point2D point) {
-		if(!contains(point))
+	public boolean connect(FXBlock block, Bounds bounds) {
+		if (!getLayoutBounds().intersects(bounds))
 			return false;
-		return getFXRows().stream().anyMatch(row->row.connect(block, point.subtract(row.getLayoutX(), row.getLayoutY())));
+		return getFXRows().stream().anyMatch(
+				row -> row.connect(block, FXHelper.subtractBounds2D(bounds, row.getLayoutX(), row.getLayoutY())));
+	}
+	
+	@Override
+	public boolean contains(double localX, double localY) {
+		return dragSVGPath.contains(localX, localY);
 	}
 	
 	@Override
