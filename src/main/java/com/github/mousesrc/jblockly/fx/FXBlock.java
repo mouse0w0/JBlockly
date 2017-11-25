@@ -27,7 +27,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
 
-import static com.github.mousesrc.jblockly.fx.FXBlockGlobal.*;
+import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
 
 public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Connectable{
 	

@@ -3,7 +3,7 @@ package com.github.mousesrc.jblockly.fx;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 
-public interface FXBlockGlobal {
+public interface FXBlockConstant {
 
 	double INSERT_WIDTH = 5;
 	double INSERT_OFFSET_Y = 10;
