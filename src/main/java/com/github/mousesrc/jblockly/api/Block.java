@@ -1,9 +1,11 @@
 package com.github.mousesrc.jblockly.api;
 
-import java.util.Set;
+import java.util.List;
 
 public interface Block {
 	
-	Set<BlockRow> getRows();
+	String getBlockName();
+	
+	List<BlockRow> getRows();
 	
 }
