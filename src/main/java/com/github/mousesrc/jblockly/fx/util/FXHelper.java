@@ -25,6 +25,10 @@ public interface FXHelper {
 				localToScene.getY() + scene.getY() + window.getY());
 	}
 	
+	static Bounds addBounds2D(Bounds bounds, double x, double y) {
+		return new BoundingBox(bounds.getMinX() + x, bounds.getMinY() + y, bounds.getWidth(), bounds.getHeight());
+	}
+	
 	static Bounds subtractBounds2D(Bounds bounds, double x, double y) {
 		return new BoundingBox(bounds.getMinX() - x, bounds.getMinY() - y, bounds.getWidth(), bounds.getHeight());
 	}

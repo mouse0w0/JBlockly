@@ -1,5 +1,6 @@
 package com.github.mousesrc.jblockly.fx;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,21 +10,23 @@ import com.github.mousesrc.jblockly.fx.skin.FXBlockSkin;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -32,9 +35,8 @@ import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
 
-public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Connectable{
+public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Connectable{
 	
-	private ObjectProperty<ConnectionType> connectionType;
 	public final ObjectProperty<ConnectionType> connectionTypeProperty(){
 		if(connectionType == null)
 			connectionType = new SimpleObjectProperty<ConnectionType>(this, "connection") {
@@ -45,51 +47,63 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 			};
 		return connectionType;
 	}
+	private ObjectProperty<ConnectionType> connectionType;
 	public final ConnectionType getConnectionType() {
 		ConnectionType local = connectionType == null ? ConnectionType.NONE : connectionTypeProperty().get();
 		return local == null ? ConnectionType.NONE : local;}
 	public final void setConnectionType(ConnectionType value) {connectionTypeProperty().set(value);}
 	
-	private BooleanProperty movable;
 	public final BooleanProperty movableProperty() {
 		if (movable == null) 
 			movable = new SimpleBooleanProperty(this, "movable");
 		return movable;
 	}
+	private BooleanProperty movable;
 	public boolean isMovable() {return movable == null ? true : movableProperty().get();}
 	public final void setMovable(boolean value) {movableProperty().set(value);}
 	
-	private StringProperty name;
 	public final StringProperty nameProperty(){
 		if(name == null)
 			name = new SimpleStringProperty(this, "name");
 		return name;
 	}
+	private StringProperty name;
 	public final String getName() {return name == null ? null : nameProperty().get();}
 	public final void setName(String name) {nameProperty().set(name);}
 	
-	private ReadOnlyBooleanWrapper moving;
+    public final DoubleProperty spacingProperty() {
+        if (spacing == null) 
+            spacing = new SimpleDoubleProperty(this, "spacing");
+        return spacing;
+    }
+    private DoubleProperty spacing;
+    public final void setSpacing(double value) { spacingProperty().set(value); }
+    public final double getSpacing() { return spacing == null ? 0 : spacing.get(); }
+	
 	private ReadOnlyBooleanWrapper movingPropertyImpl() {
 		if(moving == null)
 			moving = new ReadOnlyBooleanWrapper(this, "moving");
 		return moving;
 	}
+	private ReadOnlyBooleanWrapper moving;
 	public final ReadOnlyBooleanProperty movingProperty() {return movingPropertyImpl().getReadOnlyProperty();}
 	public final boolean isMoving() {return moving == null ? false : moving.get();}
 	private void setMoving(boolean moving) {movingPropertyImpl().set(moving);}
 	
-	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspacePropertyImpl(){
 		if(workspace==null)
 			workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this, "workspace");
 		return workspace;
 	}
+	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
 	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspacePropertyImpl().getReadOnlyProperty();}
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
 	private final SVGPath dragSVGPath = new SVGPath();
+	
+	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
 	
 	private static final String DEFAULT_STYLE_CLASS = "block";
 	
@@ -189,28 +203,19 @@ public class FXBlock extends Control implements Block,BlockWorkspaceHolder,Conne
 	}
 	
 	@Override
-	public ObservableList<Node> getChildren() {
-		return super.getChildren();
-	}
-	
-	@Override
 	public String getBlockName() {
 		return getName();
 	}
 
 	@Override
 	public List<BlockRow> getRows() {
-		return getChildren().stream()
-				.filter(node->node instanceof BlockRow)
+		return fxRows.stream()
 				.map(node->(BlockRow)node)
 				.collect(Collectors.toList());
 	}
 	
-	public List<FXBlockRow> getFXRows() {
-		return getChildren().stream()
-				.filter(node->node instanceof FXBlockRow)
-				.map(node->(FXBlockRow)node)
-				.collect(Collectors.toList());
+	public ObservableList<FXBlockRow> getFXRows() {
+		return fxRows;
 	}
 	
 	@Override
