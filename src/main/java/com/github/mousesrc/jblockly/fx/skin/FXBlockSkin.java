@@ -2,9 +2,15 @@ package com.github.mousesrc.jblockly.fx.skin;
 
 import java.util.List;
 
+import com.github.mousesrc.jblockly.fx.ConnectionType;
 import com.github.mousesrc.jblockly.fx.FXBlock;
+import com.github.mousesrc.jblockly.fx.FXBlockConstant;
+import com.github.mousesrc.jblockly.fx.FXBlockRow;
 
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.shape.SVGPath;
@@ -26,7 +32,7 @@ public class FXBlockSkin extends SkinBase<FXBlock>{
 	
 	private void initComponentsListener(){
 		getChildren().addAll(getSkinnable().getFXRows());
-		getSkinnable().getFXRows().addListener(new ListChangeListener<Node>(){
+		getFXRows().addListener(new ListChangeListener<Node>(){
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
@@ -42,24 +48,46 @@ public class FXBlockSkin extends SkinBase<FXBlock>{
 		});
 	}
 	
+	private ObservableList<FXBlockRow> getFXRows() {
+		return getSkinnable().getFXRows();
+	}
+	
+	private ConnectionType getConnectionType(){
+		return getSkinnable().getConnectionType();
+	}
+
 	@Override
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
-		// TODO 自动生成的方法存根
-		return super.computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
+		final double left = getConnectionType() == ConnectionType.LEFT ? FXBlockConstant.LEFT_WIDTH : 0;
+		return left + getFXRows().stream().mapToDouble(row -> row.prefWidth(-1)).max().orElse(0);
 	}
-	
+
 	@Override
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
-		// TODO 自动生成的方法存根
-		return super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
-	}
-	
-	@Override
-	protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-		// TODO 自动生成的方法存根
-		super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
+		return getFXRows().stream().mapToDouble(row -> row.prefHeight(-1)).sum();
 	}
 
+	private boolean performingLayout;
+
+	@Override
+	protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
+		if (performingLayout)
+			return;
+		performingLayout = true;
+
+		double left = getConnectionType() == ConnectionType.LEFT ? FXBlockConstant.LEFT_WIDTH : 0;
+		double top = 0;
+		
+		for (FXBlockRow row : getFXRows()) {
+			double width = row.prefWidth(-1), height = row.prefHeight(-1);
+			layoutInArea(row, left, top, width, height, -1, HPos.LEFT, VPos.TOP);
+			top += height;
+		}
+		
+		layoutInArea(renderSVGPath, 0, 0, renderSVGPath.prefWidth(-1), renderSVGPath.prefHeight(-1), -1, HPos.LEFT, VPos.TOP);
+
+		performingLayout = false;
+	}
 }

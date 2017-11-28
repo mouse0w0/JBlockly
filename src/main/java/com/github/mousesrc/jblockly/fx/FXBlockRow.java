@@ -93,7 +93,9 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		
 		initWorkspaceListener();
 		
-		setMinSize(100, 30);
+		setSnapToPixel(true);
+		
+		setMinSize(150, 35);
 	}
 	
 	private void initWorkspaceListener(){
@@ -112,21 +114,17 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		return components;
 	}
 	
-	public FXBlock getParentBlock(){
+	public FXBlock getParentBlock() {
 		return (FXBlock) getParent();
 	}
 
-	@Override
-	public Optional<Block> getBlock() {
-		return Optional.ofNullable(getFXBlock());
+	public boolean isFirst(){
+		return getParentBlock().getFXRows().indexOf(this) == 0;
 	}
-
-	@Override
-	public List<BlockInput<?>> getInputs() {
-		return getComponents().stream()
-				.filter(node->node instanceof BlockInput<?>)
-				.map(node->(BlockInput<?>)node)
-				.collect(Collectors.toList());
+	
+	public boolean isLast(){
+		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
+		return rows.indexOf(this) == rows.size();
 	}
 	
 	@Override
@@ -141,6 +139,19 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		default:
 			return false;
 		}
+	}
+	
+	@Override
+	public Optional<Block> getBlock() {
+		return Optional.ofNullable(getFXBlock());
+	}
+
+	@Override
+	public List<BlockInput<?>> getInputs() {
+		return getComponents().stream()
+				.filter(node->node instanceof BlockInput<?>)
+				.map(node->(BlockInput<?>)node)
+				.collect(Collectors.toList());
 	}
 	
 	@Override

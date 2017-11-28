@@ -53,6 +53,20 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		return local == null ? ConnectionType.NONE : local;}
 	public final void setConnectionType(ConnectionType value) {connectionTypeProperty().set(value);}
 	
+    public final DoubleProperty spacingProperty() {
+        if (spacing == null) 
+            spacing = new SimpleDoubleProperty(this, "spacing"){
+        		@Override
+        		protected void invalidated() {
+        			requestLayout();
+        		}
+        	};
+        return spacing;
+    }
+    private DoubleProperty spacing;
+    public final void setSpacing(double value) { spacingProperty().set(value); }
+    public final double getSpacing() { return spacing == null ? 0 : spacing.get(); }
+    
 	public final BooleanProperty movableProperty() {
 		if (movable == null) 
 			movable = new SimpleBooleanProperty(this, "movable");
@@ -70,15 +84,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private StringProperty name;
 	public final String getName() {return name == null ? null : nameProperty().get();}
 	public final void setName(String name) {nameProperty().set(name);}
-	
-    public final DoubleProperty spacingProperty() {
-        if (spacing == null) 
-            spacing = new SimpleDoubleProperty(this, "spacing");
-        return spacing;
-    }
-    private DoubleProperty spacing;
-    public final void setSpacing(double value) { spacingProperty().set(value); }
-    public final double getSpacing() { return spacing == null ? 0 : spacing.get(); }
 	
 	private ReadOnlyBooleanWrapper movingPropertyImpl() {
 		if(moving == null)
@@ -113,7 +118,8 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		initWorkspaceListener();
 		initBlockDragListener();
 		
-		setPickOnBounds(false); // 启用不规则图形判断,具体见contains方法
+		setPickOnBounds(false); // 启用不规则图形判断
+		setSnapToPixel(true);
 	}
 	
 	private double tempOldX, tempOldY;
