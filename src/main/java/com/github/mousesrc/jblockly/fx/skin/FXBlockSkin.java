@@ -80,10 +80,16 @@ public class FXBlockSkin extends SkinBase<FXBlock>{
 		double left = getConnectionType() == ConnectionType.LEFT ? FXBlockConstant.LEFT_WIDTH : 0;
 		double top = 0;
 		
-		for (FXBlockRow row : getFXRows()) {
-			double width = snapSize(row.prefWidth(-1)), height = snapSize(row.prefHeight(-1));
-			layoutInArea(row, left, top, width, height, -1, HPos.LEFT, VPos.TOP);
-			top += height;
+		ObservableList<FXBlockRow> rows = getFXRows();
+		double[] rowWidths = new double[rows.size()];
+		for (int i = 0 , size = rows.size(); i < size;i++) {
+			FXBlockRow row = rows.get(i);
+			if(row.isManaged()) {
+				double width = snapSize(row.prefWidth(-1)), height = snapSize(row.prefHeight(-1));
+				rowWidths[i] = width;
+				layoutInArea(row, left, top, width, height, -1, HPos.LEFT, VPos.TOP);
+				top += height;
+			}
 		}
 		
 		layoutInArea(renderSVGPath, 0, 0, renderSVGPath.prefWidth(-1), renderSVGPath.prefHeight(-1), -1, HPos.LEFT, VPos.TOP);

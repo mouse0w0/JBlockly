@@ -115,15 +115,15 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow>{
 	@Override
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
-		// TODO 自动生成的方法存根
-		return super.computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
+		FXBlock block = getFXBlock();
+		return block == null ? componentBounds.get().getWidth() : block.getLayoutX() + block.getWidth();
 	}
-	
+
 	@Override
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
-		// TODO 自动生成的方法存根
-		return super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
+		FXBlock block = getFXBlock();
+		return Math.max(componentBounds.get().getHeight(), block == null ? 0 : block.getLayoutY() + block.getHeight());
 	}
 	
 	@Override
@@ -134,16 +134,16 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow>{
 		
 		Insets padding = getSkinnable().getComponentPadding();
 		double top = snapSpace(padding.getTop());
-		double right = snapSpace(padding.getRight());
-		double bottom = snapSpace(padding.getBottom());
 		double left = snapSpace(padding.getLeft());
 		double space = snapSpace(getSkinnable().getSpacing());
 		
 		for (Node node : components) {
-			Insets margin = FXBlockRow.getMargin(node);
-			double width = computeChildPrefAreaWidth(node, margin), height = computeChildPrefAreaHeight(node, margin);
-			layoutInArea(node, left, top, width, height, -1, margin, HPos.LEFT, VPos.TOP);
-			left += width + space;
+			if(node.isManaged()) {
+				Insets margin = FXBlockRow.getMargin(node);
+				double width = computeChildPrefAreaWidth(node, margin), height = computeChildPrefAreaHeight(node, margin);
+				layoutInArea(node, left, top, width, height, -1, margin, HPos.LEFT, VPos.TOP);
+				left += width + space;
+			}
 		}
 		
 		FXBlock block = getFXBlock();

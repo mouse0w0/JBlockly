@@ -38,18 +38,22 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	public final ObjectProperty<ConnectionType> connectionTypeProperty(){
 		if(connectionType == null)
 			connectionType = new SimpleObjectProperty<ConnectionType>(this, "connection") {
-                @Override
-                public void invalidated() {
-                    requestLayout();
-                }
+
+				@Override
+				public void set(ConnectionType newValue) {
+					super.set(newValue == null ? ConnectionType.NONE : newValue);
+				}
+
+				@Override
+				public void invalidated() {
+					requestLayout();
+				}
 			};
 		return connectionType;
 	}
 	private ObjectProperty<ConnectionType> connectionType;
-	public final ConnectionType getConnectionType() {
-		ConnectionType local = connectionType == null ? ConnectionType.NONE : connectionTypeProperty().get();
-		return local == null ? ConnectionType.NONE : local;}
-	public final void setConnectionType(ConnectionType value) {connectionTypeProperty().set(value);}
+	public final ConnectionType getConnectionType() { return connectionType == null ? ConnectionType.NONE : connectionTypeProperty().get(); }
+	public final void setConnectionType(ConnectionType value) { connectionTypeProperty().set(value); }
     
 	public final BooleanProperty movableProperty() {
 		if (movable == null) 
