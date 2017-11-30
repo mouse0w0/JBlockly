@@ -20,12 +20,50 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolder, Connectable{
 	
+	public static final double UNALINGED = Double.NaN;
+	
+	private static final String MARGIN_CONSTRAINT = "block-row-margin";
+	
+    private static void setConstraint(Node node, Object key, Object value) {
+        if (value == null) {
+            node.getProperties().remove(key);
+        } else {
+            node.getProperties().put(key, value);
+        }
+        if (node.getParent() != null) {
+            node.getParent().requestLayout();
+        }
+    }
+
+    private static Object getConstraint(Node node, Object key) {
+        if (node.hasProperties()) {
+            Object value = node.getProperties().get(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+    
+    public static void setMargin(Node child, Insets value) {
+        setConstraint(child, MARGIN_CONSTRAINT, value);
+    }
+
+    public static Insets getMargin(Node child) {
+        return (Insets)getConstraint(child, MARGIN_CONSTRAINT);
+    }
+
+    public static void clearConstraints(Node child) {
+        setMargin(child, null);
+    }
+    
 	static enum Type{
 		NONE,
 		BRANCH,
@@ -66,23 +104,70 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
     public final DoubleProperty spacingProperty() {
         if (spacing == null) 
-            spacing = new SimpleDoubleProperty(this, "spacing");
+            spacing = new SimpleDoubleProperty(this, "spacing"){
+        		@Override
+        		protected void invalidated() {
+        			requestLayout();
+        		}
+        	};
         return spacing;
     }
     private DoubleProperty spacing;
     public final void setSpacing(double value) { spacingProperty().set(value); }
     public final double getSpacing() { return spacing == null ? 0 : spacing.get(); }
+    
+    public final ObjectProperty<Insets> componentPaddingProperty(){
+		if (componentPadding == null)
+			componentPadding = new SimpleObjectProperty<Insets>(this, "componentPadding") {
+				@Override
+				public void set(Insets newValue) {
+					super.set(newValue == null ? Insets.EMPTY : newValue);
+				}
+				
+				@Override
+				protected void invalidated() {
+					requestLayout();
+				}
+			};
+		return componentPadding;
+    }
+    private ObjectProperty<Insets> componentPadding;
+    public final Insets getComponentPadding() {return componentPadding == null ? Insets.EMPTY : componentPadding.get();}
+	public final void setComponentPadding(Insets componentPadding) {componentPaddingProperty().set(componentPadding);}
 	
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspacePropertyImpl(){
-		if(workspace==null)
-			workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this, "workspace");
+		if(workspace == null)
+			workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>();
 		return workspace;
 	}
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
-	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspacePropertyImpl().getReadOnlyProperty();}
+	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
+	
+	DoubleProperty alignedWidthProperty(){
+		if(alignedWidth == null)
+			alignedWidth = new SimpleDoubleProperty(){
+				@Override
+				public void set(double newValue) {
+					super.set(newValue <= 0.0 ? UNALINGED : newValue);
+				}
+			};
+		return alignedWidth;
+	}
+	private DoubleProperty alignedWidth;
+	public final double getAlignedWidth() {return alignedWidth == null ? UNALINGED : alignedWidth.get();}
+	void setAlignedWidth(double alignedWidth) {alignedWidthProperty().set(alignedWidth);}
+	
+	private ReadOnlyObjectWrapper<Bounds> componentBoundsPropertyImpl() {
+		if(componentBounds == null)
+			componentBounds = new ReadOnlyObjectWrapper<>();
+		return componentBounds;
+	}
+	private ReadOnlyObjectWrapper<Bounds> componentBounds;
+	public final ReadOnlyObjectProperty<Bounds> componentBoundsProperty() {return componentBoundsPropertyImpl().getReadOnlyProperty();}
+	public final Bounds getComponentBounds() {return componentBoundsPropertyImpl().get();}
 	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
 	
@@ -96,6 +181,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		setSnapToPixel(true);
 		
 		setMinSize(150, 35);
+		setComponentPadding(new Insets(5, 5, 0, 10));
 	}
 	
 	private void initWorkspaceListener(){
@@ -124,7 +210,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	public boolean isLast(){
 		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
-		return rows.indexOf(this) == rows.size();
+		return rows.indexOf(this) == rows.size() - 1;
 	}
 	
 	@Override
@@ -156,6 +242,8 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	@Override
 	protected Skin<?> createDefaultSkin() {
-		return new FXBlockRowSkin(this);
+		FXBlockRowSkin skin = new FXBlockRowSkin(this);
+		skin.setComponentBoundsWrapper(componentBoundsPropertyImpl());
+		return skin;
 	}
 }

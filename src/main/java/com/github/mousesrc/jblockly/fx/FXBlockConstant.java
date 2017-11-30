@@ -15,9 +15,6 @@ public interface FXBlockConstant {
 	double TOP_OFFSET_X = 10;
 
 	// Block Row
-	double BLOCK_SLOT_WIDTH = 5;
-	double BLOCK_SLOT_HEIGHT = 30;
-	
 	double INSERT_ROW_WIDTH = LEFT_WIDTH;
 	double INSERT_ROW_HEIGHT = LEFT_OFFSET_Y + LEFT_HEIGHT + 10;
 	

@@ -10,14 +10,12 @@ import com.github.mousesrc.jblockly.fx.skin.FXBlockSkin;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -52,20 +50,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		ConnectionType local = connectionType == null ? ConnectionType.NONE : connectionTypeProperty().get();
 		return local == null ? ConnectionType.NONE : local;}
 	public final void setConnectionType(ConnectionType value) {connectionTypeProperty().set(value);}
-	
-    public final DoubleProperty spacingProperty() {
-        if (spacing == null) 
-            spacing = new SimpleDoubleProperty(this, "spacing"){
-        		@Override
-        		protected void invalidated() {
-        			requestLayout();
-        		}
-        	};
-        return spacing;
-    }
-    private DoubleProperty spacing;
-    public final void setSpacing(double value) { spacingProperty().set(value); }
-    public final double getSpacing() { return spacing == null ? 0 : spacing.get(); }
     
 	public final BooleanProperty movableProperty() {
 		if (movable == null) 

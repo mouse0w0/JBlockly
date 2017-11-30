@@ -18,6 +18,8 @@ import javafx.scene.shape.SVGPath;
 public class FXBlockSkin extends SkinBase<FXBlock>{
 	
 	private final SVGPath renderSVGPath = new SVGPath();
+	
+	private boolean performingLayout;
 
 	public FXBlockSkin(FXBlock control) {
 		super(control);
@@ -60,16 +62,14 @@ public class FXBlockSkin extends SkinBase<FXBlock>{
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
 		final double left = getConnectionType() == ConnectionType.LEFT ? FXBlockConstant.LEFT_WIDTH : 0;
-		return left + getFXRows().stream().mapToDouble(row -> row.prefWidth(-1)).max().orElse(0);
+		return left + getFXRows().stream().mapToDouble(row -> snapSize(row.prefWidth(-1))).max().orElse(0);
 	}
 
 	@Override
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
-		return getFXRows().stream().mapToDouble(row -> row.prefHeight(-1)).sum();
+		return getFXRows().stream().mapToDouble(row -> snapSize(row.prefHeight(-1))).sum();
 	}
-
-	private boolean performingLayout;
 
 	@Override
 	protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
@@ -81,7 +81,7 @@ public class FXBlockSkin extends SkinBase<FXBlock>{
 		double top = 0;
 		
 		for (FXBlockRow row : getFXRows()) {
-			double width = row.prefWidth(-1), height = row.prefHeight(-1);
+			double width = snapSize(row.prefWidth(-1)), height = snapSize(row.prefHeight(-1));
 			layoutInArea(row, left, top, width, height, -1, HPos.LEFT, VPos.TOP);
 			top += height;
 		}
