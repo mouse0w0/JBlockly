@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockRow;
-import com.github.mousesrc.jblockly.fx.skin.FXBlockSkin;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
 import javafx.beans.property.BooleanProperty;

@@ -1,7 +1,4 @@
-package com.github.mousesrc.jblockly.fx.skin;
-
-import com.github.mousesrc.jblockly.fx.FXBlock;
-import com.github.mousesrc.jblockly.fx.FXBlockWorkspace;
+package com.github.mousesrc.jblockly.fx;
 
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
@@ -9,7 +6,7 @@ import javafx.scene.control.SkinBase;
 
 public class FXBlockWorkspaceSkin extends SkinBase<FXBlockWorkspace>{
 
-	public FXBlockWorkspaceSkin(FXBlockWorkspace control) {
+	protected FXBlockWorkspaceSkin(FXBlockWorkspace control) {
 		super(control);
 		
 		init();

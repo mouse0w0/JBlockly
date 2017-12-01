@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockInput;
 import com.github.mousesrc.jblockly.api.BlockRow;
-import com.github.mousesrc.jblockly.fx.skin.FXBlockRowSkin;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -64,7 +63,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
         setMargin(child, null);
     }
     
-	static enum Type{
+	public static enum Type{
 		NONE,
 		BRANCH,
 		INSERT,
@@ -146,21 +145,29 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	DoubleProperty alignedWidthProperty(){
-		if(alignedWidth == null)
-			alignedWidth = new SimpleDoubleProperty(){
+	DoubleProperty renderWidthProperty() {
+		if(renderWidth == null)
+			renderWidth = new SimpleDoubleProperty();
+		return renderWidth;
+	}
+	private DoubleProperty renderWidth;
+	double getRenderWidth() {return renderWidthProperty().get();}
+	
+	DoubleProperty alignedWidthRenderProperty(){
+		if(alignedRenderWidth == null)
+			alignedRenderWidth = new SimpleDoubleProperty(){
 				@Override
 				public void set(double newValue) {
 					super.set(newValue <= 0.0 ? UNALINGED : newValue);
 				}
 			};
-		return alignedWidth;
+		return alignedRenderWidth;
 	}
-	private DoubleProperty alignedWidth;
-	public final double getAlignedWidth() {return alignedWidth == null ? UNALINGED : alignedWidth.get();}
-	void setAlignedWidth(double alignedWidth) {alignedWidthProperty().set(alignedWidth);}
+	private DoubleProperty alignedRenderWidth;
+	double getAlignedRenderWidth() {return alignedRenderWidth == null ? UNALINGED : alignedRenderWidth.get();}
+	void setAlignedRenderWidth(double alignedWidth) {alignedWidthRenderProperty().set(alignedWidth);}
 	
-	private ReadOnlyObjectWrapper<Bounds> componentBoundsPropertyImpl() {
+	ReadOnlyObjectWrapper<Bounds> componentBoundsPropertyImpl() {
 		if(componentBounds == null)
 			componentBounds = new ReadOnlyObjectWrapper<>();
 		return componentBounds;
@@ -168,6 +175,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private ReadOnlyObjectWrapper<Bounds> componentBounds;
 	public final ReadOnlyObjectProperty<Bounds> componentBoundsProperty() {return componentBoundsPropertyImpl().getReadOnlyProperty();}
 	public final Bounds getComponentBounds() {return componentBoundsPropertyImpl().get();}
+	void setComponentBoundsProperty(Bounds componentBounds){componentBoundsPropertyImpl().set(componentBounds);}
 	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
 	
@@ -242,8 +250,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	@Override
 	protected Skin<?> createDefaultSkin() {
-		FXBlockRowSkin skin = new FXBlockRowSkin(this);
-		skin.setComponentBoundsWrapper(componentBoundsPropertyImpl());
-		return skin;
+		return new FXBlockRowSkin(this);
 	}
 }
