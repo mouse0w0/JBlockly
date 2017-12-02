@@ -12,12 +12,13 @@ import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.shape.SVGPath;
 
+import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
+
 public class FXBlockSkin extends SkinBase<FXBlock> {
 
 	private final SVGPath renderSVGPath = new SVGPath();
 
 	private boolean performingLayout;
-
 	private double[] tempArray;
 
 	protected FXBlockSkin(FXBlock control) {
@@ -49,14 +50,6 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		});
 	}
 
-	private ObservableList<FXBlockRow> getFXRows() {
-		return getSkinnable().getFXRows();
-	}
-
-	private ConnectionType getConnectionType() {
-		return getSkinnable().getConnectionType();
-	}
-
 	@Override
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
@@ -74,9 +67,8 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
 		double height = 0;
-		for (FXBlockRow row : getFXRows()) {
+		for (FXBlockRow row : getFXRows()) 
 			height += snapSize(row.prefHeight(-1));
-		}
 		return height;
 	}
 
@@ -106,7 +98,8 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		performingLayout = false;
 	}
 	
-	private void render(List<FXBlockRow> rows) {
+	protected void render(List<FXBlockRow> rows) {
+		StringBuilder svgPath = new StringBuilder(getRenderSVGPath());
 		double[] rowComponentWidths = getRowRenderWidths(rows);
 		int index = 0;
 		double correntMaxWidth = 0;
@@ -121,9 +114,37 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 				index = i + 1;
 				correntMaxWidth = rowComponentWidths[i];
 			}
+			
+			svgPath.append(row.renderSvg());
 		}
 
 		alignRowRenderWidth(rows, index, rows.size() - 1, correntMaxWidth);
+	}
+	
+	protected String getRenderSVGPath(){
+		switch (getConnectionType()) {
+		case TOP:
+			return new StringBuilder()
+					.append("M 0 0 H ").append(TOP_OFFSET_X)
+					.append(" V ").append(TOP_HEIGHT)
+					.append(" H ").append(TOP_OFFSET_X + TOP_WIDTH)
+					.append(" V 0 H ").append(getFirstAlignedRenderWidth())
+					.toString();
+		case LEFT:
+			return new StringBuilder()
+					.append("M ").append(LEFT_WIDTH).append(" ").append(LEFT_OFFSET_Y + LEFT_HEIGHT)
+					.append(" H 0 V ").append(LEFT_OFFSET_Y)
+					.append(" H ").append(LEFT_WIDTH)
+					.append(" V 0 H ").append(getFirstAlignedRenderWidth())
+					.toString();
+		default:
+			return "M 0 0 H " + getFirstAlignedRenderWidth();
+		}
+	}
+	
+	private double getFirstAlignedRenderWidth(){
+		List<FXBlockRow> rows = getFXRows();
+		return rows.isEmpty() ? 0 : rows.get(0).getAlignedRenderWidth();
 	}
 	
 	private void alignRowRenderWidth(List<FXBlockRow> rows, int from, int to, double alignedWidth) {
@@ -133,10 +154,8 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	
 	private double[] getRowRenderWidths(List<FXBlockRow> rows) {
 		double[] temp = getTempArray(rows.size());
-		for (int i = 0, size = rows.size(); i < size; i++){
-			FXBlockRow row = rows.get(i);
-			temp[i] = row.getRenderWidth();
-		}
+		for (int i = 0, size = rows.size(); i < size; i++)
+			temp[i] = rows.get(i).computeRenderWidth();
 		return temp;
 	}
 	
@@ -147,5 +166,17 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 			tempArray = new double[Math.max(tempArray.length * 3, size)];
 		}
 		return tempArray;
+	}
+	
+	private ObservableList<FXBlockRow> getFXRows() {
+		return getSkinnable().getFXRows();
+	}
+
+	private ConnectionType getConnectionType() {
+		return getSkinnable().getConnectionType();
+	}
+	
+	SVGPath getRenderSVGPathImpl(){
+		return renderSVGPath;
 	}
 }

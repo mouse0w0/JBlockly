@@ -93,9 +93,9 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	private final SVGPath dragSVGPath = new SVGPath();
-	
 	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
+	
+	private SVGPath dragSVGPath;
 	
 	private static final String DEFAULT_STYLE_CLASS = "block";
 	
@@ -195,6 +195,10 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		}
 	}
 	
+	public ObservableList<FXBlockRow> getFXRows() {
+		return fxRows;
+	}
+	
 	@Override
 	public String getBlockName() {
 		return getName();
@@ -207,10 +211,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 				.collect(Collectors.toList());
 	}
 	
-	public ObservableList<FXBlockRow> getFXRows() {
-		return fxRows;
-	}
-	
 	@Override
 	public boolean connect(FXBlock block, Bounds bounds) {
 		if (!getLayoutBounds().intersects(bounds))
@@ -221,6 +221,8 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	@Override
 	public boolean contains(double localX, double localY) {
+		if(dragSVGPath == null)
+			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPathImpl();
 		return dragSVGPath.contains(localX, localY);
 	}
 	

@@ -2,7 +2,8 @@ package com.github.mousesrc.jblockly.fx;
 
 import java.util.List;
 
-import javafx.beans.property.DoubleProperty;
+import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
+
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
@@ -19,8 +20,6 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 	private ObservableList<Node> components;
 	private ReadOnlyObjectWrapper<Bounds> componentBounds;
-	private DoubleProperty renderWidth;
-	private double blockX;
 	private boolean removingBlock;
 	private boolean performingLayout;
 
@@ -29,7 +28,6 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 		components = control.getComponents();
 		componentBounds = control.componentBoundsPropertyImpl();
-		renderWidth = control.renderWidthProperty();
 
 		initComponentsListener();
 		initBlockListener();
@@ -95,13 +93,13 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	private FXBlock getParentBlock() {
 		return getSkinnable().getParentBlock();
 	}
-
-	public void setComponentBoundsWrapper(ReadOnlyObjectWrapper<Bounds> componentsBounds) {
-		this.componentBounds = componentsBounds;
+	
+	private Type getType(){
+		return getSkinnable().getType();
 	}
 	
-	protected double computeRenderWidth(){
-		return 0;
+	protected double computeBlockX(){
+		return getType() == Type.INSERT ? getSkinnable().getAlignedRenderWidth() - FXBlockConstant.LEFT_WIDTH : componentBounds.get().getWidth();
 	}
 
 	protected double computeComponentWidth(double topInset, double rightInset, double bottomInset, double leftInset) {
@@ -169,7 +167,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 		FXBlock block = getFXBlock();
 		if (block != null) {
-			layoutInArea(block, blockX, 0, computeChildPrefAreaWidth(block, null),
+			layoutInArea(block, computeBlockX(), 0, computeChildPrefAreaWidth(block, null),
 					computeChildPrefAreaHeight(block, null), -1, HPos.LEFT, VPos.TOP);
 		}
 
@@ -193,7 +191,6 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		super.dispose();
 		components = null;
 		componentBounds = null;
-		renderWidth = null;
 		components.removeListener(componentListener);
 		getSkinnable().blockProperty().removeListener(blockChangeListener);
 		getChildren().removeListener(childrenListener);

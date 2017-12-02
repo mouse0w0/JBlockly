@@ -145,13 +145,18 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	DoubleProperty renderWidthProperty() {
-		if(renderWidth == null)
-			renderWidth = new SimpleDoubleProperty();
-		return renderWidth;
+	double computeRenderWidth() {
+		switch (getType()) {
+		case BRANCH:
+			return componentBounds.get().getWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
+		case INSERT:
+			return componentBounds.get().getWidth() + FXBlockConstant.LEFT_WIDTH;
+		case NONE:
+			return componentBounds.get().getWidth();
+		default:
+			return FXBlockConstant.BLOCK_ROW_MIN_WIDTH;
+		}
 	}
-	private DoubleProperty renderWidth;
-	double getRenderWidth() {return renderWidthProperty().get();}
 	
 	DoubleProperty alignedWidthRenderProperty(){
 		if(alignedRenderWidth == null)
@@ -189,7 +194,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		setSnapToPixel(true);
 		
 		setMinSize(150, 35);
-		setComponentPadding(new Insets(5, 5, 0, 10));
+		setComponentPadding(new Insets(0, 5, 0, 5));
 	}
 	
 	private void initWorkspaceListener(){
@@ -219,6 +224,56 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	public boolean isLast(){
 		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
 		return rows.indexOf(this) == rows.size() - 1;
+	}
+	
+	public String renderSvg(){
+		double x = getLayoutX();
+		double y = getLayoutY();
+		double alignedRenderWidth = getAlignedRenderWidth();
+		switch (getType()) {
+		case INSERT:
+			return new StringBuilder()
+					.append(" V ").append(y + FXBlockConstant.LEFT_OFFSET_Y)
+					.append(" H ").append(alignedRenderWidth - FXBlockConstant.LEFT_WIDTH)
+					.append(" V ").append(y + FXBlockConstant.LEFT_OFFSET_Y + FXBlockConstant.LEFT_HEIGHT)
+					.append(" H ").append(alignedRenderWidth)
+					.toString();
+		case BRANCH:
+			Bounds componentBounds = getComponentBounds();
+			return new StringBuilder()
+					.append(" V ").append(y)
+					.append(" H ").append(x + componentBounds.getWidth() + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
+					.append(" V ").append(y + FXBlockConstant.TOP_HEIGHT)
+					.append(" H ").append(x + componentBounds.getWidth() + FXBlockConstant.TOP_OFFSET_X)
+					.append(" V ").append(y)
+					.append(" H ").append(x + componentBounds.getWidth())
+					.append(" V ").append(Math.max(componentBounds.getHeight(), getBlockHeight()))
+					.append(" H ").append(getNextRowAlignedRenderWidth())
+					.toString();
+		case NEXT:
+			return new StringBuilder()
+					.append(" V ").append(y)
+					.append(" H ").append(x + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
+					.append(" V ").append(y + FXBlockConstant.TOP_HEIGHT)
+					.append(" H ").append(x + FXBlockConstant.TOP_OFFSET_X)
+					.append(" V ").append(y)
+					.append(" H ").append(x)
+					.append(" Z ")
+					.toString();
+		default:
+			return "";
+		}
+	}
+	
+	private double getNextRowAlignedRenderWidth() {
+		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
+		int nextIndex = rows.indexOf(this) + 1;
+		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedRenderWidth() : getAlignedRenderWidth();
+	}
+	
+	private double getBlockHeight(){
+		FXBlock block = getFXBlock();
+		return block == null ? 0 : block.getHeight();
 	}
 	
 	@Override
