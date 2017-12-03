@@ -8,10 +8,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.scene.control.Control;
+import javafx.scene.control.Skin;
 
 public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, Connectable{
 	
-	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this, "workspace", this);
+	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this);
 	public ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspace.getReadOnlyProperty();}
 
 	private final ObservableList<FXBlock> blocks = FXCollections.observableArrayList();
@@ -30,5 +31,10 @@ public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, C
 	public boolean connect(FXBlock block, Bounds bounds) {
 		return getBlocks().stream()
 				.anyMatch(b -> b.connect(block, FXHelper.subtractBounds2D(bounds, b.getLayoutX(), b.getLayoutY())));
+	}
+	
+	@Override
+	protected Skin<?> createDefaultSkin() {
+		return new FXBlockWorkspaceSkin(this);
 	}
 }

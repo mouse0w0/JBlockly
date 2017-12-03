@@ -99,7 +99,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	}
 	
 	protected void render(List<FXBlockRow> rows) {
-		StringBuilder svgPath = new StringBuilder(getRenderSVGPath());
+		StringBuilder svgPath = new StringBuilder(renderBegin());
 		double[] rowComponentWidths = getRowRenderWidths(rows);
 		int index = 0;
 		double correntMaxWidth = 0;
@@ -110,18 +110,19 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 				correntMaxWidth = rowComponentWidths[i];
 
 			if (row.getType() == Type.BRANCH) {
-				alignRowRenderWidth(rows, index, i, correntMaxWidth);
+				alignRowRenderWidth(rows, svgPath, index, i, correntMaxWidth);
 				index = i + 1;
 				correntMaxWidth = rowComponentWidths[i];
 			}
-			
-			svgPath.append(row.renderSvg());
 		}
 
-		alignRowRenderWidth(rows, index, rows.size() - 1, correntMaxWidth);
+		alignRowRenderWidth(rows, svgPath, index, rows.size() - 1, correntMaxWidth);
+		svgPath.append(renderEnd());
+		System.out.println(svgPath);
+		renderSVGPath.setContent(svgPath.toString());
 	}
 	
-	protected String getRenderSVGPath(){
+	protected String renderBegin(){
 		switch (getConnectionType()) {
 		case TOP:
 			return new StringBuilder()
@@ -142,14 +143,24 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		}
 	}
 	
+	protected String renderEnd(){
+		if(getConnectionType() == ConnectionType.LEFT)
+			return " H " + LEFT_WIDTH + " Z";
+		else 
+			return " H 0 Z";
+	}
+	
 	private double getFirstAlignedRenderWidth(){
 		List<FXBlockRow> rows = getFXRows();
 		return rows.isEmpty() ? 0 : rows.get(0).getAlignedRenderWidth();
 	}
 	
-	private void alignRowRenderWidth(List<FXBlockRow> rows, int from, int to, double alignedWidth) {
-		for (int i = from; i <= to; i++)
-			rows.get(i).setAlignedRenderWidth(alignedWidth);
+	private void alignRowRenderWidth(List<FXBlockRow> rows, StringBuilder svgPath, int from, int to, double alignedWidth) {
+		for (int i = from; i <= to; i++) {
+			FXBlockRow row = rows.get(i);
+			row.setAlignedRenderWidth(alignedWidth);
+			svgPath.append(row.render());
+		}
 	}
 	
 	private double[] getRowRenderWidths(List<FXBlockRow> rows) {

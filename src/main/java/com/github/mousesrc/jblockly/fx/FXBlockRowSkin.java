@@ -52,6 +52,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	private void initComponentsListener() {
 		getChildren().addAll(getSkinnable().getComponents());
 		components.addListener(componentListener);
+		updateComponents();
 	}
 	
 	private final ChangeListener<? super FXBlock> blockChangeListener = (observable, oldValue, newValue) -> {

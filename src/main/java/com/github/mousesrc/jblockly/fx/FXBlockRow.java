@@ -18,6 +18,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -26,7 +27,7 @@ import javafx.scene.control.Skin;
 
 public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolder, Connectable{
 	
-	public static final double UNALINGED = Double.NaN;
+	public static final double UNALINGED = 0;
 	
 	private static final String MARGIN_CONSTRAINT = "block-row-margin";
 	
@@ -145,25 +146,12 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	double computeRenderWidth() {
-		switch (getType()) {
-		case BRANCH:
-			return componentBounds.get().getWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
-		case INSERT:
-			return componentBounds.get().getWidth() + FXBlockConstant.LEFT_WIDTH;
-		case NONE:
-			return componentBounds.get().getWidth();
-		default:
-			return FXBlockConstant.BLOCK_ROW_MIN_WIDTH;
-		}
-	}
-	
 	DoubleProperty alignedWidthRenderProperty(){
 		if(alignedRenderWidth == null)
 			alignedRenderWidth = new SimpleDoubleProperty(){
 				@Override
 				public void set(double newValue) {
-					super.set(newValue <= 0.0 ? UNALINGED : newValue);
+					super.set(newValue < 0.0 ? UNALINGED : newValue);
 				}
 			};
 		return alignedRenderWidth;
@@ -174,7 +162,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	ReadOnlyObjectWrapper<Bounds> componentBoundsPropertyImpl() {
 		if(componentBounds == null)
-			componentBounds = new ReadOnlyObjectWrapper<>();
+			componentBounds = new ReadOnlyObjectWrapper<>(new BoundingBox(0, 0, 0, 0));
 		return componentBounds;
 	}
 	private ReadOnlyObjectWrapper<Bounds> componentBounds;
@@ -194,6 +182,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		setSnapToPixel(true);
 		
 		setMinSize(150, 35);
+		setSpacing(5);
 		setComponentPadding(new Insets(0, 5, 0, 5));
 	}
 	
@@ -226,7 +215,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		return rows.indexOf(this) == rows.size() - 1;
 	}
 	
-	public String renderSvg(){
+	public String render(){
 		double x = getLayoutX();
 		double y = getLayoutY();
 		double alignedRenderWidth = getAlignedRenderWidth();
@@ -257,23 +246,25 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 					.append(" V ").append(y + FXBlockConstant.TOP_HEIGHT)
 					.append(" H ").append(x + FXBlockConstant.TOP_OFFSET_X)
 					.append(" V ").append(y)
-					.append(" H ").append(x)
-					.append(" Z ")
 					.toString();
 		default:
-			return "";
+			return " V " + (y + getHeight());
 		}
 	}
 	
-	private double getNextRowAlignedRenderWidth() {
-		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
-		int nextIndex = rows.indexOf(this) + 1;
-		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedRenderWidth() : getAlignedRenderWidth();
-	}
-	
-	private double getBlockHeight(){
-		FXBlock block = getFXBlock();
-		return block == null ? 0 : block.getHeight();
+	double computeRenderWidth() {
+		switch (getType()) {
+		case BRANCH:
+			return componentBounds.get().getWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
+		case INSERT:
+			return componentBounds.get().getWidth() + FXBlockConstant.LEFT_WIDTH;
+		case NONE:
+			return componentBounds.get().getWidth();
+		case NEXT:
+			return FXBlockConstant.BLOCK_ROW_MIN_WIDTH;
+		default:
+			return FXBlockConstant.BLOCK_ROW_MIN_WIDTH;
+		}
 	}
 	
 	@Override
@@ -306,5 +297,16 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	@Override
 	protected Skin<?> createDefaultSkin() {
 		return new FXBlockRowSkin(this);
+	}
+	
+	private double getNextRowAlignedRenderWidth() {
+		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
+		int nextIndex = rows.indexOf(this) + 1;
+		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedRenderWidth() : getAlignedRenderWidth();
+	}
+	
+	private double getBlockHeight(){
+		FXBlock block = getFXBlock();
+		return block == null ? 0 : block.getHeight();
 	}
 }
