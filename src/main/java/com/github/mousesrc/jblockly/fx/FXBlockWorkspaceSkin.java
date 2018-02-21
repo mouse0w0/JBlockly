@@ -9,12 +9,7 @@ public class FXBlockWorkspaceSkin extends SkinBase<FXBlockWorkspace>{
 	protected FXBlockWorkspaceSkin(FXBlockWorkspace control) {
 		super(control);
 		
-		init();
 		initBlocksListener();
-	}
-	
-	private void init(){
-		
 	}
 	
 	private boolean removingBlock = false;

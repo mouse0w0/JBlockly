@@ -113,8 +113,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	private void initBlockDragListener(){
 		addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
-			event.consume();
-			
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace == null)
 				return;
@@ -129,24 +127,26 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			tempOldY = event.getSceneY() - pos.getY();
 			
 			setMoving(true);
+			
+			event.consume();
 		});
 		addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
-			event.consume();
-			
 			if (!isMoving())
 				return;
 			
 			setLayoutX(event.getSceneX() - tempOldX);
 			setLayoutY(event.getSceneY() - tempOldY);
+			
+			event.consume();
 		});
 		addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-			event.consume();
-			
 			setMoving(false);
 			
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace != null)
-				getWorkspace().connect(this, getConnectionBounds());
+				workspace.connect(this, getConnectionBounds());
+			
+			event.consume();
 		});
 	}
 	
@@ -213,10 +213,22 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	@Override
 	public boolean connect(FXBlock block, Bounds bounds) {
+		if(block == this)
+			return false;
+		
 		if (!getLayoutBounds().intersects(bounds))
 			return false;
+		
 		return getFXRows().stream().anyMatch(
 				row -> row.connect(block, FXHelper.subtractBounds2D(bounds, row.getLayoutX(), row.getLayoutY())));
+	}
+	
+	
+	@Override
+	public boolean contains(Point2D localPoint) {
+		if(dragSVGPath == null)
+			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPathImpl();
+		return dragSVGPath.contains(localPoint);
 	}
 	
 	@Override
