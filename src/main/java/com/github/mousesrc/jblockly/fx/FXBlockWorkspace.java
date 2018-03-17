@@ -1,17 +1,15 @@
 package com.github.mousesrc.jblockly.fx;
 
-import com.github.mousesrc.jblockly.fx.util.FXHelper;
-
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
-import javafx.scene.control.Control;
-import javafx.scene.control.Skin;
+import javafx.scene.layout.Region;
 
-public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, Connectable{
+public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Connectable{
 	
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this);
 	public ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspace.getReadOnlyProperty();}
@@ -22,6 +20,40 @@ public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, C
 	
 	public FXBlockWorkspace() {
 		getStyleClass().addAll(DEFAULT_STYLE_CLASS);
+		initBlocksListener();
+	}
+	
+	private boolean removingBlock = false;
+	private void initBlocksListener(){
+		getChildren().addAll(getBlocks());
+		getBlocks().addListener(new ListChangeListener<FXBlock>() {
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FXBlock> c) {
+				while(c.next()){
+					getChildren().addAll(c.getAddedSubList());
+					if(!removingBlock && !c.getRemoved().isEmpty()){
+						removingBlock = true;
+						getChildren().removeAll(c.getRemoved());
+						removingBlock = false;
+					}
+				}
+			}
+		});
+		getChildren().addListener(new ListChangeListener<Node>() {
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
+				while(c.next()){
+					if(!removingBlock && !c.getRemoved().isEmpty()){
+						removingBlock = true;
+						getBlocks().removeAll(c.getRemoved());
+						removingBlock = false;
+					}
+				}
+			}
+			
+		});
 	}
 	
 	public ObservableList<FXBlock> getBlocks(){
@@ -30,8 +62,10 @@ public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, C
 	
 	@Override
 	public boolean connect(FXBlock block, Bounds bounds) {
-		return getBlocks().stream()
-				.anyMatch(b -> b.connect(block, FXHelper.subtractBounds2D(bounds, b.getLayoutX(), b.getLayoutY())));
+		for (FXBlock b : getBlocks())
+			if (b.connect(block, bounds))
+				return true;
+		return false;
 	}
 	
 	@Override
@@ -48,10 +82,5 @@ public class FXBlockWorkspace extends Control implements BlockWorkspaceHolder, C
 		for (Node node : getManagedChildren())
 			height = Math.max(height, node.getLayoutY() + node.prefHeight(-1));
 		return height;
-	}
-	
-	@Override
-	protected Skin<?> createDefaultSkin() {
-		return new FXBlockWorkspaceSkin(this);
 	}
 }

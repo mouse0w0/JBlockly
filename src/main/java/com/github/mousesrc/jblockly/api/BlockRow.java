@@ -7,5 +7,5 @@ public interface BlockRow {
 
 	Optional<Block> getBlock();
 	
-	List<BlockInput<?>> getInputs();
+	List<BlockInputer<?>> getInputers();
 }

@@ -6,8 +6,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.mousesrc.jblockly.api.Block;
-import com.github.mousesrc.jblockly.api.BlockInput;
+import com.github.mousesrc.jblockly.api.BlockInputer;
 import com.github.mousesrc.jblockly.api.BlockRow;
+import com.github.mousesrc.jblockly.fx.util.SVGBuilder;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -18,7 +19,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -26,43 +26,6 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolder, Connectable{
-	
-	public static final double UNALINGED = 0;
-	
-	private static final String MARGIN_CONSTRAINT = "block-row-margin";
-	
-    private static void setConstraint(Node node, Object key, Object value) {
-        if (value == null) {
-            node.getProperties().remove(key);
-        } else {
-            node.getProperties().put(key, value);
-        }
-        if (node.getParent() != null) {
-            node.getParent().requestLayout();
-        }
-    }
-
-    private static Object getConstraint(Node node, Object key) {
-        if (node.hasProperties()) {
-            Object value = node.getProperties().get(key);
-            if (value != null) {
-                return value;
-            }
-        }
-        return null;
-    }
-    
-    public static void setMargin(Node child, Insets value) {
-        setConstraint(child, MARGIN_CONSTRAINT, value);
-    }
-
-    public static Insets getMargin(Node child) {
-        return (Insets)getConstraint(child, MARGIN_CONSTRAINT);
-    }
-
-    public static void clearConstraints(Node child) {
-        setMargin(child, null);
-    }
     
 	public static enum Type{
 		NONE,
@@ -146,36 +109,24 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
 	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
-	DoubleProperty alignedWidthRenderProperty(){
-		if(alignedRenderWidth == null)
-			alignedRenderWidth = new SimpleDoubleProperty(){
-				@Override
-				public void set(double newValue) {
-					super.set(newValue < 0.0 ? UNALINGED : newValue);
-				}
-			};
-		return alignedRenderWidth;
-	}
-	private DoubleProperty alignedRenderWidth;
-	double getAlignedRenderWidth() {return alignedRenderWidth == null ? UNALINGED : alignedRenderWidth.get();}
-	void setAlignedRenderWidth(double alignedWidth) {alignedWidthRenderProperty().set(alignedWidth);}
+	private double alignedWidth = 0;
+	protected final double getAlignedWidth() {return alignedWidth;}
+	protected final void setAlignedWidth(double alignedWidth) {this.alignedWidth = alignedWidth;}
 	
-	ReadOnlyObjectWrapper<Bounds> componentBoundsPropertyImpl() {
-		if(componentBounds == null)
-			componentBounds = new ReadOnlyObjectWrapper<>(new BoundingBox(0, 0, 0, 0));
-		return componentBounds;
-	}
-	private ReadOnlyObjectWrapper<Bounds> componentBounds;
-	public final ReadOnlyObjectProperty<Bounds> componentBoundsProperty() {return componentBoundsPropertyImpl().getReadOnlyProperty();}
-	public final Bounds getComponentBounds() {return componentBoundsPropertyImpl().get();}
-	void setComponentBoundsProperty(Bounds componentBounds){componentBoundsPropertyImpl().set(componentBounds);}
+	private double componentWidth = 0;
+	protected final double getComponentWidth() {return componentWidth;}
+	protected final void setComponentWidth(double componentWidth) {this.componentWidth = componentWidth;}
+	
+	private double componentHeight = 0;
+	protected final double getComponentHeight() {return componentHeight;}
+	protected final void setComponentHeight(double componentHeight) {this.componentHeight = componentHeight;}
 	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
 	
 	private static final String DEFAULT_STYLE_CLASS = "block-row";
 	
 	public FXBlockRow() {
-		getStyleClass().addAll(DEFAULT_STYLE_CLASS);
+		getStyleClass().setAll(DEFAULT_STYLE_CLASS);
 		
 		initWorkspaceListener();
 		
@@ -183,7 +134,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		
 		setMinSize(150, 35);
 		setSpacing(5);
-		setComponentPadding(new Insets(0, 5, 0, 5));
+		setComponentPadding(new Insets(5, 5, 0, 5));
 	}
 	
 	private void initWorkspaceListener(){
@@ -215,51 +166,48 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		return rows.indexOf(this) == rows.size() - 1;
 	}
 	
-	public String render(){
-		double x = getLayoutX();
-		double y = getLayoutY();
-		double alignedRenderWidth = getAlignedRenderWidth();
+	public void render(SVGBuilder svgBuilder){
+		final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
+				componentWidth = getComponentWidth(), componentHeight = getComponentHeight();
 		switch (getType()) {
 		case INSERT:
-			return new StringBuilder()
-					.append(" V ").append(y + FXBlockConstant.LEFT_OFFSET_Y)
-					.append(" H ").append(alignedRenderWidth - FXBlockConstant.LEFT_WIDTH)
-					.append(" V ").append(y + FXBlockConstant.LEFT_OFFSET_Y + FXBlockConstant.LEFT_HEIGHT)
-					.append(" H ").append(alignedRenderWidth)
-					.toString();
+			svgBuilder.v(y + FXBlockConstant.LEFT_OFFSET_Y)
+					.h(alignedRenderWidth - FXBlockConstant.LEFT_WIDTH)
+					.v(y + FXBlockConstant.LEFT_OFFSET_Y + FXBlockConstant.LEFT_HEIGHT)
+					.h(alignedRenderWidth);
+			break;
 		case BRANCH:
-			Bounds componentBounds = getComponentBounds();
-			return new StringBuilder()
-					.append(" V ").append(y)
-					.append(" H ").append(x + componentBounds.getWidth() + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
-					.append(" V ").append(y + FXBlockConstant.TOP_HEIGHT)
-					.append(" H ").append(x + componentBounds.getWidth() + FXBlockConstant.TOP_OFFSET_X)
-					.append(" V ").append(y)
-					.append(" H ").append(x + componentBounds.getWidth())
-					.append(" V ").append(Math.max(componentBounds.getHeight(), getBlockHeight()))
-					.append(" H ").append(getNextRowAlignedRenderWidth())
-					.toString();
+			
+			svgBuilder.v(y)
+					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
+					.v(y + FXBlockConstant.TOP_HEIGHT)
+					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X)
+					.v(y)
+					.h(x + componentWidth)
+					.v(Math.max(componentHeight, getBlockHeight()))
+					.h(getNextRowAlignedRenderWidth());
+			break;
 		case NEXT:
-			return new StringBuilder()
-					.append(" V ").append(y)
-					.append(" H ").append(x + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
-					.append(" V ").append(y + FXBlockConstant.TOP_HEIGHT)
-					.append(" H ").append(x + FXBlockConstant.TOP_OFFSET_X)
-					.append(" V ").append(y)
-					.toString();
-		default:
-			return " V " + (y + getHeight());
+			svgBuilder.v(y)
+					.h(x + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
+					.v(y + FXBlockConstant.TOP_HEIGHT)
+					.h(x + FXBlockConstant.TOP_OFFSET_X)
+					.v(y);
+			break;
+		case NONE:
+			svgBuilder.v(y + componentHeight);
+			break;
 		}
 	}
 	
 	double computeRenderWidth() {
 		switch (getType()) {
 		case BRANCH:
-			return componentBounds.get().getWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
+			return getComponentWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
 		case INSERT:
-			return componentBounds.get().getWidth() + FXBlockConstant.LEFT_WIDTH;
+			return getComponentWidth() + FXBlockConstant.LEFT_WIDTH;
 		case NONE:
-			return componentBounds.get().getWidth();
+			return getComponentWidth();
 		case NEXT:
 			return FXBlockConstant.BLOCK_ROW_MIN_WIDTH;
 		default:
@@ -287,10 +235,10 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	}
 
 	@Override
-	public List<BlockInput<?>> getInputs() {
+	public List<BlockInputer<?>> getInputers() {
 		return getComponents().stream()
-				.filter(node->node instanceof BlockInput<?>)
-				.map(node->(BlockInput<?>)node)
+				.filter(node->node instanceof BlockInputer<?>)
+				.map(node->(BlockInputer<?>)node)
 				.collect(Collectors.toList());
 	}
 	
@@ -302,7 +250,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private double getNextRowAlignedRenderWidth() {
 		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
 		int nextIndex = rows.indexOf(this) + 1;
-		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedRenderWidth() : getAlignedRenderWidth();
+		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedWidth() : getAlignedWidth();
 	}
 	
 	private double getBlockHeight(){

@@ -22,8 +22,9 @@ public class Demo extends Application{
 		
 		FXBlock block = new FXBlock();
 		
+		Label label = new Label("233333333333");
 		FXBlockRow blockRow1 = new FXBlockRow();
-		blockRow1.getComponents().addAll(new Label("233"));
+		blockRow1.getComponents().addAll(label);
 		block.getFXRows().addAll(blockRow1);
 		
 		workspace.getBlocks().addAll(block);

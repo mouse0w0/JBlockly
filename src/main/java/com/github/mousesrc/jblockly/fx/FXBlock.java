@@ -28,6 +28,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
@@ -100,7 +101,7 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private static final String DEFAULT_STYLE_CLASS = "block";
 	
 	public FXBlock() {
-		getStyleClass().addAll(DEFAULT_STYLE_CLASS);
+		getStyleClass().setAll(DEFAULT_STYLE_CLASS);
 		
 		initWorkspaceListener();
 		initBlockDragListener();
@@ -144,7 +145,7 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace != null)
-				workspace.connect(this, getConnectionBounds());
+				workspace.connect(this, getConnectionBounds(workspace));
 			
 			event.consume();
 		});
@@ -183,8 +184,9 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			((FXBlockWorkspace) parent).getBlocks().remove(this);
 	}
 	
-	public Bounds getConnectionBounds(){
-		final double x = getLayoutX(), y = getLayoutY();
+	public Bounds getConnectionBounds(FXBlockWorkspace workspace){
+		final Point2D pos = FXHelper.getRelativePos(workspace, this);
+		final double x = pos.getX(), y = pos.getY();
 		switch (getConnectionType()) {
 		case TOP:
 			return new BoundingBox(x + TOP_OFFSET_X , y, TOP_WIDTH, TOP_HEIGHT);
@@ -219,22 +221,19 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		if (!getLayoutBounds().intersects(bounds))
 			return false;
 		
-		return getFXRows().stream().anyMatch(
-				row -> row.connect(block, FXHelper.subtractBounds2D(bounds, row.getLayoutX(), row.getLayoutY())));
-	}
-	
-	
-	@Override
-	public boolean contains(Point2D localPoint) {
-		if(dragSVGPath == null)
-			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPathImpl();
-		return dragSVGPath.contains(localPoint);
+		for(FXBlockRow row : getFXRows())
+			if(row.connect(block, FXHelper.subtractBounds2D(bounds, row.getLayoutX(), row.getLayoutY())))
+					return true;
+		return false;
 	}
 	
 	@Override
 	public boolean contains(double localX, double localY) {
-		if(dragSVGPath == null)
-			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPathImpl();
+		if(dragSVGPath == null) {
+			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPath();
+			dragSVGPath.setFill(Color.WHITE);
+			dragSVGPath.setStroke(Color.BLACK);
+		}
 		return dragSVGPath.contains(localX, localY);
 	}
 	

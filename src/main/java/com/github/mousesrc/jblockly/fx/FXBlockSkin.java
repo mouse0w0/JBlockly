@@ -3,6 +3,7 @@ package com.github.mousesrc.jblockly.fx;
 import java.util.List;
 
 import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
+import com.github.mousesrc.jblockly.fx.util.SVGBuilder;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -21,7 +22,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	private boolean performingLayout;
 	private double[] tempArray;
 
-	protected FXBlockSkin(FXBlock control) {
+	public FXBlockSkin(FXBlock control) {
 		super(control);
 
 		init();
@@ -39,10 +40,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
 				while (c.next()) {
-					List<? extends Node> add = c.getAddedSubList();
-					for (int i = 0, from = c.getFrom(), size = add.size(); i < size; i++)
-						getChildren().add(i + from + 1, c.getAddedSubList().get(i));
-
+					getChildren().addAll(c.getAddedSubList());
 					getChildren().removeAll(c.getRemoved());
 				}
 			}
@@ -83,14 +81,14 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		
 		ObservableList<FXBlockRow> rows = getFXRows();
 		
-		render(rows);
-		
 		for (int i = 0, size = rows.size(); i < size; i++) {
 			FXBlockRow row = rows.get(i);
 			double width = snapSize(row.prefWidth(-1)), height = snapSize(row.prefHeight(-1));
 			layoutInArea(row, left, top, width, height, -1, HPos.LEFT, VPos.TOP);
 			top += height;
 		}
+		
+		render(rows);
 
 		layoutInArea(renderSVGPath, 0, 0, renderSVGPath.prefWidth(-1), renderSVGPath.prefHeight(-1), -1, HPos.LEFT,
 				VPos.TOP);
@@ -99,7 +97,6 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	}
 	
 	protected void render(List<FXBlockRow> rows) {
-		StringBuilder svgPath = new StringBuilder(renderBegin());
 		double[] rowComponentWidths = getRowRenderWidths(rows);
 		int index = 0;
 		double correntMaxWidth = 0;
@@ -110,57 +107,59 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 				correntMaxWidth = rowComponentWidths[i];
 
 			if (row.getType() == Type.BRANCH) {
-				alignRowRenderWidth(rows, svgPath, index, i, correntMaxWidth);
+				alignRowWidth(rows, index, i, correntMaxWidth);
 				index = i + 1;
 				correntMaxWidth = rowComponentWidths[i];
 			}
 		}
-
-		alignRowRenderWidth(rows, svgPath, index, rows.size() - 1, correntMaxWidth);
-		svgPath.append(renderEnd());
-		System.out.println(svgPath);
-		renderSVGPath.setContent(svgPath.toString());
+		alignRowWidth(rows, index, rows.size() - 1, correntMaxWidth);
+		
+		SVGBuilder svgBuilder = new SVGBuilder();
+		renderBegin(svgBuilder);
+		for (FXBlockRow row : rows)
+			row.render(svgBuilder);
+		renderEnd(svgBuilder);
+		
+		renderSVGPath.setContent(svgBuilder.toString());
+		System.out.println(renderSVGPath.getContent());
 	}
 	
-	protected String renderBegin(){
+	protected void renderBegin(SVGBuilder svgBuilder){
 		switch (getConnectionType()) {
 		case TOP:
-			return new StringBuilder()
-					.append("M 0 0 H ").append(TOP_OFFSET_X)
-					.append(" V ").append(TOP_HEIGHT)
-					.append(" H ").append(TOP_OFFSET_X + TOP_WIDTH)
-					.append(" V 0 H ").append(getFirstAlignedRenderWidth())
-					.toString();
+			svgBuilder.m(0, 0)
+					.h(TOP_OFFSET_X)
+					.v(TOP_HEIGHT)
+					.h(TOP_OFFSET_X + TOP_WIDTH)
+					.v(0)
+					.h(getFirstAlignedRenderWidth());
+			break;
 		case LEFT:
-			return new StringBuilder()
-					.append("M ").append(LEFT_WIDTH).append(" ").append(LEFT_OFFSET_Y + LEFT_HEIGHT)
-					.append(" H 0 V ").append(LEFT_OFFSET_Y)
-					.append(" H ").append(LEFT_WIDTH)
-					.append(" V 0 H ").append(getFirstAlignedRenderWidth())
-					.toString();
+			svgBuilder.m(LEFT_WIDTH,LEFT_OFFSET_Y + LEFT_HEIGHT)
+					.h(0)
+					.v(LEFT_OFFSET_Y)
+					.h(LEFT_WIDTH)
+					.v(0)
+					.h(getFirstAlignedRenderWidth());
+			break;
 		default:
-			return "M 0 0 H " + getFirstAlignedRenderWidth();
+			svgBuilder.m(0, 0).h(getFirstAlignedRenderWidth());
+			break;
 		}
 	}
 	
-	protected String renderEnd(){
-		if(getConnectionType() == ConnectionType.LEFT)
-			return " H " + LEFT_WIDTH + " Z";
-		else 
-			return " H 0 Z";
+	protected void renderEnd(SVGBuilder svgBuilder){
+		svgBuilder.h(getConnectionType() == ConnectionType.LEFT ? LEFT_WIDTH : 0).z();
 	}
 	
 	private double getFirstAlignedRenderWidth(){
 		List<FXBlockRow> rows = getFXRows();
-		return rows.isEmpty() ? 0 : rows.get(0).getAlignedRenderWidth();
+		return rows.isEmpty() ? 0 : rows.get(0).getAlignedWidth();
 	}
 	
-	private void alignRowRenderWidth(List<FXBlockRow> rows, StringBuilder svgPath, int from, int to, double alignedWidth) {
-		for (int i = from; i <= to; i++) {
-			FXBlockRow row = rows.get(i);
-			row.setAlignedRenderWidth(alignedWidth);
-			svgPath.append(row.render());
-		}
+	private void alignRowWidth(List<FXBlockRow> rows, int from, int to, double alignedWidth) {
+		for (int i = from; i <= to; i++) 
+			rows.get(i).setAlignedWidth(alignedWidth);
 	}
 	
 	private double[] getRowRenderWidths(List<FXBlockRow> rows) {
@@ -179,15 +178,15 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		return tempArray;
 	}
 	
-	private ObservableList<FXBlockRow> getFXRows() {
+	protected ObservableList<FXBlockRow> getFXRows() {
 		return getSkinnable().getFXRows();
 	}
 
-	private ConnectionType getConnectionType() {
+	protected ConnectionType getConnectionType() {
 		return getSkinnable().getConnectionType();
 	}
 	
-	SVGPath getRenderSVGPathImpl(){
+	protected SVGPath getRenderSVGPath(){
 		return renderSVGPath;
 	}
 }
