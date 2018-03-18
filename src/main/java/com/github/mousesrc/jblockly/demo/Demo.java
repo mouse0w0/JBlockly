@@ -3,6 +3,7 @@ package com.github.mousesrc.jblockly.demo;
 import com.github.mousesrc.jblockly.fx.FXBlock;
 import com.github.mousesrc.jblockly.fx.FXBlockRow;
 import com.github.mousesrc.jblockly.fx.FXBlockWorkspace;
+import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -25,7 +26,15 @@ public class Demo extends Application{
 		Label label = new Label("233333333333");
 		FXBlockRow blockRow1 = new FXBlockRow();
 		blockRow1.getComponents().addAll(label);
-		block.getFXRows().addAll(blockRow1);
+		
+		FXBlockRow blockRow2 = new FXBlockRow();
+		blockRow2.setType(Type.BRANCH);
+		blockRow2.getComponents().addAll(new Label("233333333333"));
+		
+		FXBlockRow blockRow3 = new FXBlockRow();
+		blockRow3.getComponents().addAll(new Label("233333333333"));
+		
+		block.getFXRows().addAll(blockRow1,blockRow2,blockRow3);
 		
 		workspace.getBlocks().addAll(block);
 		

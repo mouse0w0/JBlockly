@@ -1,9 +1,8 @@
 package com.github.mousesrc.jblockly.fx;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockRow;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
@@ -28,7 +27,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
@@ -97,6 +95,12 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
 	
 	private SVGPath dragSVGPath;
+	protected SVGPath getDragSVGPath() {
+		return dragSVGPath;
+	}
+	protected void setDragSVGPath(SVGPath svg) {
+		this.dragSVGPath = svg;
+	}
 	
 	private static final String DEFAULT_STYLE_CLASS = "block";
 	
@@ -208,9 +212,7 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 
 	@Override
 	public List<BlockRow> getRows() {
-		return fxRows.stream()
-				.map(node->(BlockRow)node)
-				.collect(Collectors.toList());
+		return new ArrayList<>(fxRows);
 	}
 	
 	@Override
@@ -229,12 +231,12 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	@Override
 	public boolean contains(double localX, double localY) {
-		if(dragSVGPath == null) {
-			dragSVGPath = ((FXBlockSkin)getSkin()).getRenderSVGPath();
-			dragSVGPath.setFill(Color.WHITE);
-			dragSVGPath.setStroke(Color.BLACK);
-		}
 		return dragSVGPath.contains(localX, localY);
+	}
+	
+	@Override
+	public boolean contains(Point2D localPoint) {
+		return dragSVGPath.contains(localPoint);
 	}
 	
 	@Override

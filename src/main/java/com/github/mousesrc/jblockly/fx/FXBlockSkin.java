@@ -11,13 +11,14 @@ import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
 
 public class FXBlockSkin extends SkinBase<FXBlock> {
 
-	private final SVGPath renderSVGPath = new SVGPath();
+	private SVGPath renderSVGPath;
 
 	private boolean performingLayout;
 	private double[] tempArray;
@@ -30,7 +31,11 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	}
 
 	private void init() {
+		renderSVGPath = new SVGPath();
 		getChildren().add(renderSVGPath);
+		getSkinnable().setDragSVGPath(renderSVGPath);
+		renderSVGPath.setFill(Color.WHITE);
+		renderSVGPath.setStroke(Color.BLACK);
 	}
 
 	private void initComponentsListener() {

@@ -177,14 +177,13 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 					.h(alignedRenderWidth);
 			break;
 		case BRANCH:
-			
 			svgBuilder.v(y)
 					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
 					.v(y + FXBlockConstant.TOP_HEIGHT)
 					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X)
 					.v(y)
 					.h(x + componentWidth)
-					.v(Math.max(componentHeight, getBlockHeight()))
+					.v(y + Math.max(componentHeight, getBlockHeight()))
 					.h(getNextRowAlignedRenderWidth());
 			break;
 		case NEXT:
