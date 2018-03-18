@@ -71,16 +71,22 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 	@Override
 	protected double computePrefWidth(double height) {
 		double width = 0;
-		for (Node node : getManagedChildren())
-			width = Math.max(width, node.getLayoutX() + node.prefWidth(-1));
+		for (Node node : getManagedChildren()) {
+			double nodeWidth = node.getLayoutX() + node.prefHeight(-1);
+			if(nodeWidth > width)
+				width = nodeWidth;
+		}
 		return width;
 	}
 
 	@Override
 	protected double computePrefHeight(double width) {
 		double height = 0;
-		for (Node node : getManagedChildren())
-			height = Math.max(height, node.getLayoutY() + node.prefHeight(-1));
+		for (Node node : getManagedChildren()) {
+			double nodeHeight = node.getLayoutY() + node.prefHeight(-1);
+			if(nodeHeight > height)
+				height = nodeHeight;
+		}
 		return height;
 	}
 }

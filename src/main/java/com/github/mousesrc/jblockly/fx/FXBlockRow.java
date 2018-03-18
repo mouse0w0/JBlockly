@@ -67,7 +67,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
     public final DoubleProperty spacingProperty() {
         if (spacing == null) 
-            spacing = new SimpleDoubleProperty(this, "spacing"){
+            spacing = new SimpleDoubleProperty(this, "spacing", 0){
         		@Override
         		protected void invalidated() {
         			requestLayout();
@@ -81,7 +81,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
     
     public final ObjectProperty<Insets> componentPaddingProperty(){
 		if (componentPadding == null)
-			componentPadding = new SimpleObjectProperty<Insets>(this, "componentPadding") {
+			componentPadding = new SimpleObjectProperty<Insets>(this, "componentPadding", Insets.EMPTY) {
 				@Override
 				public void set(Insets newValue) {
 					super.set(newValue == null ? Insets.EMPTY : newValue);
@@ -132,7 +132,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		
 		setSnapToPixel(true);
 		
-		setMinSize(150, 35);
 		setSpacing(5);
 		setComponentPadding(new Insets(5, 5, 0, 5));
 	}

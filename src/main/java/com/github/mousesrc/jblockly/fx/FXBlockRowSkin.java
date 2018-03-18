@@ -29,6 +29,8 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 		components = control.getComponents();
 		
+		consumeMouseEvents(false); // Make block drag avaliable.
+		
 		initComponentContainer();
 		initBlockListener();
 	}

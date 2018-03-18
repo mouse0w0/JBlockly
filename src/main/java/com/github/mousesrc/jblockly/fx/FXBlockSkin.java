@@ -26,11 +26,13 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	public FXBlockSkin(FXBlock control) {
 		super(control);
 
-		init();
+		consumeMouseEvents(false); // Make block drag avaliable.
+		
+		initRenderSVG();
 		initComponentsListener();
 	}
 
-	private void init() {
+	private void initRenderSVG() {
 		renderSVGPath = new SVGPath();
 		getChildren().add(renderSVGPath);
 		getSkinnable().setDragSVGPath(renderSVGPath);

@@ -235,11 +235,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	}
 	
 	@Override
-	public boolean contains(Point2D localPoint) {
-		return dragSVGPath.contains(localPoint);
-	}
-	
-	@Override
 	protected Skin<?> createDefaultSkin() {
 		return new FXBlockSkin(this);
 	}
