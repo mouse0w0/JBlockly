@@ -16,6 +16,8 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -67,12 +69,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
     public final DoubleProperty spacingProperty() {
         if (spacing == null) 
-            spacing = new SimpleDoubleProperty(this, "spacing", 0){
-        		@Override
-        		protected void invalidated() {
-        			requestLayout();
-        		}
-        	};
+            spacing = new SimpleDoubleProperty(this, "spacing");
         return spacing;
     }
     private DoubleProperty spacing;
@@ -81,22 +78,21 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
     
     public final ObjectProperty<Insets> componentPaddingProperty(){
 		if (componentPadding == null)
-			componentPadding = new SimpleObjectProperty<Insets>(this, "componentPadding", Insets.EMPTY) {
-				@Override
-				public void set(Insets newValue) {
-					super.set(newValue == null ? Insets.EMPTY : newValue);
-				}
-				
-				@Override
-				protected void invalidated() {
-					requestLayout();
-				}
-			};
+			componentPadding = new SimpleObjectProperty<Insets>(this, "componentPadding");
 		return componentPadding;
     }
     private ObjectProperty<Insets> componentPadding;
     public final Insets getComponentPadding() {return componentPadding == null ? Insets.EMPTY : componentPadding.get();}
 	public final void setComponentPadding(Insets componentPadding) {componentPaddingProperty().set(componentPadding);}
+	
+	public final StringProperty nameProperty(){
+		if(name == null)
+			name = new SimpleStringProperty(this, "name");
+		return name;
+	}
+	private StringProperty name;
+	public final String getName() {return name == null ? null : nameProperty().get();}
+	public final void setName(String name) {nameProperty().set(name);}
 	
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspacePropertyImpl(){
 		if(workspace == null)

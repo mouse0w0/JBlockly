@@ -95,10 +95,10 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
 	
 	private SVGPath dragSVGPath;
-	protected SVGPath getDragSVGPath() {
+	protected final SVGPath getDragSVGPath() {
 		return dragSVGPath;
 	}
-	protected void setDragSVGPath(SVGPath svg) {
+	protected final void setDragSVGPath(SVGPath svg) {
 		this.dragSVGPath = svg;
 	}
 	
@@ -132,6 +132,7 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			tempOldY = event.getSceneY() - pos.getY();
 			
 			setMoving(true);
+			workspace.setMovingBlockProperty(this);
 			
 			event.consume();
 		});
@@ -148,8 +149,10 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			setMoving(false);
 			
 			FXBlockWorkspace workspace = getWorkspace();
-			if(workspace != null)
+			if(workspace != null) {
+				workspace.setMovingBlockProperty(null);
 				workspace.connect(this, getConnectionBounds(workspace));
+			}
 			
 			event.consume();
 		});

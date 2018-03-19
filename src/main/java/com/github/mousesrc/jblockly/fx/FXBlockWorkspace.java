@@ -12,8 +12,24 @@ import javafx.scene.layout.Region;
 public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Connectable{
 	
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this);
-	public ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspace.getReadOnlyProperty();}
+	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspace.getReadOnlyProperty();}
 
+	private ReadOnlyObjectWrapper<FXBlock> movingBlock;
+	protected final ReadOnlyObjectWrapper<FXBlock> movingBlockPropertyImpl() {
+		if(movingBlock == null)
+			movingBlock = new ReadOnlyObjectWrapper<>(this, "movingBlock");
+		return movingBlock;
+	}
+	public final ReadOnlyObjectProperty<FXBlock> movingBlockProperty() {
+		return movingBlockPropertyImpl().getReadOnlyProperty();
+	}
+	public final FXBlock getMovingBlockProperty() {
+		return movingBlock == null ? null : movingBlock.get();
+	}
+	protected final void setMovingBlockProperty(FXBlock block) {
+		movingBlockPropertyImpl().set(block);
+	}
+	
 	private final ObservableList<FXBlock> blocks = FXCollections.observableArrayList();
 	
 	private static final String DEFAULT_STYLE_CLASS = "block-workspace";
@@ -62,6 +78,8 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 	
 	@Override
 	public boolean connect(FXBlock block, Bounds bounds) {
+		if(bounds == null)
+			return false;
 		for (FXBlock b : getBlocks())
 			if (b.connect(block, bounds))
 				return true;

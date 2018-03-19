@@ -25,11 +25,11 @@ public class Demo extends Application{
 		
 		Label label = new Label("233333333333");
 		FXBlockRow blockRow1 = new FXBlockRow();
+		blockRow1.setType(Type.INSERT);
 		blockRow1.getComponents().addAll(label);
 		
 		FXBlockRow blockRow2 = new FXBlockRow();
 		blockRow2.setType(Type.BRANCH);
-		blockRow2.getComponents().addAll(new Label("233333333333"));
 		
 		FXBlockRow blockRow3 = new FXBlockRow();
 		blockRow3.getComponents().addAll(new Label("233333333333"));

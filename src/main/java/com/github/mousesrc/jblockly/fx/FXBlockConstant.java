@@ -28,9 +28,11 @@ public interface FXBlockConstant {
 	// 
 	double BLOCK_ROW_MIN_WIDTH = 100;
 	double BLOCK_ROW_MIN_HEIGHT = 30;
+	
 	double NEXT_ROW_MIN_HEIGHT = 10;
+	
 	double BRANCH_ROW_SLOT_MIN_WIDTH = 50;
-	double BRANCH_ROW_SLOT_MIN_HEIGHT = 10;
+	double BRANCH_ROW_COMPONENT_MIN_HEIGHT = 30;
 	double BRANCH_ROW_TOP_HEIGHT = 10;
 	double BRANCH_ROW_BOTTOM_HEIGHT = 10;
 }

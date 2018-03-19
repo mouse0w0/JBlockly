@@ -7,5 +7,7 @@ public interface BlockRow {
 
 	Optional<Block> getBlock();
 	
+	String getName();
+	
 	List<BlockInputer<?>> getInputers();
 }

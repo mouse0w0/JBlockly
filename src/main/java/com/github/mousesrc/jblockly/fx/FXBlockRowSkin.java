@@ -89,7 +89,24 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		componentContainer.spacingProperty().bind(getSkinnable().spacingProperty());
 		componentContainer.getChildren().setAll(components);
 		components.addListener(componentsListener);
+		getSkinnable().typeProperty().addListener((observable)->updateComponentContainer());
+		updateComponentContainer();
 		getChildren().add(componentContainer);
+	}
+	
+	private void updateComponentContainer() {
+		switch (getSkinnable().getType()) {
+		case NONE:
+		case INSERT:
+			componentContainer.setMinSize(FXBlockConstant.BLOCK_ROW_MIN_WIDTH, FXBlockConstant.BLOCK_ROW_MIN_HEIGHT);
+			break;
+		case NEXT:
+			componentContainer.setMinSize(0, FXBlockConstant.NEXT_ROW_MIN_HEIGHT);
+			break;
+		case BRANCH:
+			componentContainer.setMinSize(0, FXBlockConstant.BRANCH_ROW_COMPONENT_MIN_HEIGHT);
+			break;
+		}
 	}
 	
 	protected double computeBlockX() {
