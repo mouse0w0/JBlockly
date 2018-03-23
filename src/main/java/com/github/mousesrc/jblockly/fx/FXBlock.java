@@ -151,7 +151,8 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace != null) {
 				workspace.setMovingBlockProperty(null);
-				workspace.connect(this, getConnectionBounds(workspace));
+				if(getConnectionType().isConnectable())
+					workspace.connect(this, getConnectionBounds());
 			}
 			
 			event.consume();
@@ -191,9 +192,8 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			((FXBlockWorkspace) parent).getBlocks().remove(this);
 	}
 	
-	public Bounds getConnectionBounds(FXBlockWorkspace workspace){
-		final Point2D pos = FXHelper.getRelativePos(workspace, this);
-		final double x = pos.getX(), y = pos.getY();
+	public Bounds getConnectionBounds(){
+		final double x = getLayoutX(), y = getLayoutY();
 		switch (getConnectionType()) {
 		case TOP:
 			return new BoundingBox(x + TOP_OFFSET_X , y, TOP_WIDTH, TOP_HEIGHT);
@@ -219,17 +219,20 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	}
 	
 	@Override
-	public boolean connect(FXBlock block, Bounds bounds) {
+	public ConnectionResult connect(FXBlock block, Bounds bounds) {
 		if(block == this)
-			return false;
+			return ConnectionResult.FAILURE;
 		
-		if (!getLayoutBounds().intersects(bounds))
-			return false;
+		if (!getBoundsInParent().intersects(bounds))
+			return ConnectionResult.FAILURE;
 		
-		for(FXBlockRow row : getFXRows())
-			if(row.connect(block, FXHelper.subtractBounds2D(bounds, row.getLayoutX(), row.getLayoutY())))
-					return true;
-		return false;
+		Bounds subBounds = FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY());
+		for(FXBlockRow row : getFXRows()) {
+			ConnectionResult result = row.connect(block, subBounds);
+			if(result != ConnectionResult.FAILURE)
+				return result;
+		}
+		return ConnectionResult.FAILURE;
 	}
 	
 	@Override

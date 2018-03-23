@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockInputer;
 import com.github.mousesrc.jblockly.api.BlockRow;
+import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import com.github.mousesrc.jblockly.fx.util.SVGBuilder;
 
 import javafx.beans.property.DoubleProperty;
@@ -21,6 +22,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -34,6 +36,18 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		BRANCH,
 		INSERT,
 		NEXT;
+		
+		public boolean isConnectable(ConnectionType connectionType) {
+			switch (this) {
+			case BRANCH:
+			case NEXT:
+				return connectionType == ConnectionType.TOP;
+			case INSERT:
+				return connectionType == ConnectionType.LEFT;
+			default:
+				return false;
+			}
+		}
 	}
 	
 	public final ObjectProperty<Type> typeProperty() {
@@ -117,6 +131,31 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	protected final double getComponentHeight() {return componentHeight;}
 	protected final void setComponentHeight(double componentHeight) {this.componentHeight = componentHeight;}
 	
+	private Bounds connectBounds;
+	protected Bounds getConnectBounds() {
+		if (connectBounds == null) {
+			final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
+					componentWidth = getComponentWidth();
+			switch (getType()) {
+			case INSERT:
+				connectBounds = new BoundingBox(x + alignedRenderWidth, y + FXBlockConstant.LEFT_OFFSET_Y,
+						FXBlockConstant.LEFT_WIDTH, FXBlockConstant.LEFT_HEIGHT);
+				break;
+			case BRANCH:
+				connectBounds = new BoundingBox(x + componentWidth + FXBlockConstant.TOP_OFFSET_X, y,
+						FXBlockConstant.TOP_WIDTH, FXBlockConstant.TOP_HEIGHT);
+				break;
+			case NEXT:
+				connectBounds = new BoundingBox(x + FXBlockConstant.TOP_OFFSET_X, y, FXBlockConstant.TOP_WIDTH,
+						FXBlockConstant.TOP_HEIGHT);
+				break;
+			case NONE:
+				break;
+			}
+		}
+		return connectBounds;
+	}
+	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
 	
 	private static final String DEFAULT_STYLE_CLASS = "block-row";
@@ -194,7 +233,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		}
 	}
 	
-	double computeRenderWidth() {
+	protected double computeRenderWidth() {
 		switch (getType()) {
 		case BRANCH:
 			return getComponentWidth() + FXBlockConstant.BRANCH_ROW_SLOT_MIN_WIDTH;
@@ -209,18 +248,24 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		}
 	}
 	
+	public boolean isConnectable(FXBlock block) {
+		return getType().isConnectable(block.getConnectionType());
+	}
+	
 	@Override
-	public boolean connect(FXBlock block, Bounds bounds) {
-		switch (getType()) {
-		case BRANCH:
-			
-		case INSERT:
-		
-		case NEXT:
-			
-		default:
-			return false;
+	public ConnectionResult connect(FXBlock block, Bounds bounds) {
+		if(getType() == Type.NONE)
+			return ConnectionResult.FAILURE;
+		if(getConnectBounds().intersects(bounds)) {
+			if(!isConnectable(block))
+				return ConnectionResult.CANCELLED;
+			setBlock(block);
+			return ConnectionResult.SUCCESSFUL;
 		}
+		FXBlock child = getFXBlock();
+		if(child == null)
+			return ConnectionResult.FAILURE;
+		return child.connect(block, FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY()));
 	}
 	
 	@Override

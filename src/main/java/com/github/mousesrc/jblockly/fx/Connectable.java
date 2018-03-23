@@ -4,5 +4,5 @@ import javafx.geometry.Bounds;
 
 public interface Connectable {
 
-	boolean connect(FXBlock block, Bounds bounds);
+	ConnectionResult connect(FXBlock block, Bounds bounds);
 }

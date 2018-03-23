@@ -3,6 +3,7 @@ package com.github.mousesrc.jblockly.fx;
 import java.util.List;
 
 import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
+import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import com.github.mousesrc.jblockly.fx.util.SVGBuilder;
 
 import javafx.collections.ListChangeListener;
@@ -61,7 +62,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		final double left = getConnectionType() == ConnectionType.LEFT ? FXBlockConstant.LEFT_WIDTH : 0;
 		double width = 0;
 		for (FXBlockRow row : getFXRows()) {
-			double rowWidth = snapSize(row.prefWidth(-1));
+			double rowWidth = computeChildPrefAreaWidth(row);
 			if (rowWidth > width)
 				width = rowWidth;
 		}
@@ -73,7 +74,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 			double leftInset) {
 		double height = 0;
 		for (FXBlockRow row : getFXRows()) 
-			height += snapSize(row.prefHeight(-1));
+			height += computeChildPrefAreaHeight(row);
 		return height;
 	}
 
@@ -195,5 +196,13 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	
 	protected SVGPath getRenderSVGPath(){
 		return renderSVGPath;
+	}
+	
+	private double computeChildPrefAreaWidth(Node child) {
+		return snapSize(FXHelper.boundedSize(child.minWidth(-1), child.prefWidth(-1), child.maxWidth(-1)));
+	}
+
+	private double computeChildPrefAreaHeight(Node child) {
+		return snapSize(FXHelper.boundedSize(child.minHeight(-1), child.prefHeight(-1), child.maxHeight(-1)));
 	}
 }

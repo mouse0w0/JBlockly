@@ -1,5 +1,7 @@
 package com.github.mousesrc.jblockly.fx;
 
+import java.util.Objects;
+
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -39,7 +41,7 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 		initBlocksListener();
 	}
 	
-	private boolean removingBlock = false;
+	private boolean changingBlock = false;
 	private void initBlocksListener(){
 		getChildren().addAll(getBlocks());
 		getBlocks().addListener(new ListChangeListener<FXBlock>() {
@@ -47,11 +49,11 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FXBlock> c) {
 				while(c.next()){
-					getChildren().addAll(c.getAddedSubList());
-					if(!removingBlock && !c.getRemoved().isEmpty()){
-						removingBlock = true;
+					if(!changingBlock){
+						changingBlock = true;
+						getChildren().addAll(c.getAddedSubList());
 						getChildren().removeAll(c.getRemoved());
-						removingBlock = false;
+						changingBlock = false;
 					}
 				}
 			}
@@ -61,10 +63,13 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
 				while(c.next()){
-					if(!removingBlock && !c.getRemoved().isEmpty()){
-						removingBlock = true;
+					if(!changingBlock){
+						changingBlock = true;
+						for(Node node:c.getAddedSubList())
+							if(node instanceof FXBlock)
+								getBlocks().add((FXBlock) node);
 						getBlocks().removeAll(c.getRemoved());
-						removingBlock = false;
+						changingBlock = false;
 					}
 				}
 			}
@@ -77,13 +82,14 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 	}
 	
 	@Override
-	public boolean connect(FXBlock block, Bounds bounds) {
-		if(bounds == null)
-			return false;
-		for (FXBlock b : getBlocks())
-			if (b.connect(block, bounds))
-				return true;
-		return false;
+	public ConnectionResult connect(FXBlock block, Bounds bounds) {
+		Objects.requireNonNull(bounds);
+		for (FXBlock b : getBlocks()) {
+			ConnectionResult result = b.connect(block, bounds);
+			if(result != ConnectionResult.FAILURE)
+				return result;
+		}
+		return ConnectionResult.FAILURE;
 	}
 	
 	@Override
