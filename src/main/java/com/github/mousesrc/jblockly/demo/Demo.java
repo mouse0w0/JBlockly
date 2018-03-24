@@ -36,7 +36,10 @@ public class Demo extends Application{
 		FXBlockRow blockRow3 = new FXBlockRow();
 		blockRow3.getComponents().addAll(new Label("233333333333"));
 		
-		block1.getFXRows().addAll(blockRow1,blockRow2,blockRow3);
+		FXBlockRow blockRow7 = new FXBlockRow();
+		blockRow7.setType(Type.NEXT);
+		
+		block1.getFXRows().addAll(blockRow1,blockRow2,blockRow3,blockRow7);
 		
 		//block2
 		FXBlock block2 = new FXBlock();

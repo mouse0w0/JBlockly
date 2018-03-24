@@ -15,8 +15,6 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
-import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
-
 public class FXBlockSkin extends SkinBase<FXBlock> {
 
 	private SVGPath renderSVGPath;
@@ -123,46 +121,13 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		alignRowWidth(rows, index, rows.size() - 1, correntMaxWidth);
 		
 		SVGBuilder svgBuilder = new SVGBuilder();
-		renderBegin(svgBuilder);
+		FXBlockRenderer.renderBegin(getSkinnable(), svgBuilder);
 		for (FXBlockRow row : rows)
-			row.render(svgBuilder);
-		renderEnd(svgBuilder);
+			FXBlockRenderer.renderRow(row, svgBuilder);
+		FXBlockRenderer.renderEnd(getSkinnable(), svgBuilder);
 		
 		renderSVGPath.setContent(svgBuilder.toString());
 		System.out.println(renderSVGPath.getContent());
-	}
-	
-	protected void renderBegin(SVGBuilder svgBuilder){
-		switch (getConnectionType()) {
-		case TOP:
-			svgBuilder.m(0, 0)
-					.h(TOP_OFFSET_X)
-					.v(TOP_HEIGHT)
-					.h(TOP_OFFSET_X + TOP_WIDTH)
-					.v(0)
-					.h(getFirstAlignedRenderWidth());
-			break;
-		case LEFT:
-			svgBuilder.m(LEFT_WIDTH,LEFT_OFFSET_Y + LEFT_HEIGHT)
-					.h(0)
-					.v(LEFT_OFFSET_Y)
-					.h(LEFT_WIDTH)
-					.v(0)
-					.h(getFirstAlignedRenderWidth());
-			break;
-		default:
-			svgBuilder.m(0, 0).h(getFirstAlignedRenderWidth());
-			break;
-		}
-	}
-	
-	protected void renderEnd(SVGBuilder svgBuilder){
-		svgBuilder.h(getConnectionType() == ConnectionType.LEFT ? LEFT_WIDTH : 0).z();
-	}
-	
-	private double getFirstAlignedRenderWidth(){
-		List<FXBlockRow> rows = getFXRows();
-		return rows.isEmpty() ? 0 : rows.get(0).getAlignedWidth();
 	}
 	
 	private void alignRowWidth(List<FXBlockRow> rows, int from, int to, double alignedWidth) {

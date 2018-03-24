@@ -9,8 +9,6 @@ import com.github.mousesrc.jblockly.api.Block;
 import com.github.mousesrc.jblockly.api.BlockInputer;
 import com.github.mousesrc.jblockly.api.BlockRow;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
-import com.github.mousesrc.jblockly.fx.util.SVGBuilder;
-
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -200,39 +198,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		return rows.indexOf(this) == rows.size() - 1;
 	}
 	
-	public void render(SVGBuilder svgBuilder){
-		final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
-				componentWidth = getComponentWidth(), componentHeight = getComponentHeight();
-		switch (getType()) {
-		case INSERT:
-			svgBuilder.v(y + FXBlockConstant.LEFT_OFFSET_Y)
-					.h(alignedRenderWidth - FXBlockConstant.LEFT_WIDTH)
-					.v(y + FXBlockConstant.LEFT_OFFSET_Y + FXBlockConstant.LEFT_HEIGHT)
-					.h(alignedRenderWidth);
-			break;
-		case BRANCH:
-			svgBuilder.v(y)
-					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
-					.v(y + FXBlockConstant.TOP_HEIGHT)
-					.h(x + componentWidth + FXBlockConstant.TOP_OFFSET_X)
-					.v(y)
-					.h(x + componentWidth)
-					.v(y + Math.max(componentHeight, getBlockHeight()))
-					.h(getNextRowAlignedRenderWidth());
-			break;
-		case NEXT:
-			svgBuilder.v(y)
-					.h(x + FXBlockConstant.TOP_OFFSET_X + FXBlockConstant.TOP_WIDTH)
-					.v(y + FXBlockConstant.TOP_HEIGHT)
-					.h(x + FXBlockConstant.TOP_OFFSET_X)
-					.v(y);
-			break;
-		case NONE:
-			svgBuilder.v(y + componentHeight);
-			break;
-		}
-	}
-	
 	protected double computeRenderWidth() {
 		switch (getType()) {
 		case BRANCH:
@@ -286,13 +251,13 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		return new FXBlockRowSkin(this);
 	}
 	
-	private double getNextRowAlignedRenderWidth() {
+	protected double getNextRowAlignedRenderWidth() {
 		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
 		int nextIndex = rows.indexOf(this) + 1;
 		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedWidth() : getAlignedWidth();
 	}
 	
-	private double getBlockHeight(){
+	protected double getBlockHeight(){
 		FXBlock block = getFXBlock();
 		return block == null ? 0 : block.getHeight();
 	}
