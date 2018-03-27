@@ -17,7 +17,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
@@ -114,8 +113,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspacePropertyImpl().getReadOnlyProperty();}
 	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
-	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
-	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
 	private double alignedWidth = 0;
 	protected final double getAlignedWidth() {return alignedWidth;}
@@ -162,8 +159,7 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		getStyleClass().setAll(DEFAULT_STYLE_CLASS);
 		
 		initWorkspaceListener();
-		
-		setSnapToPixel(true);
+		initBlockChangeListener();
 		
 		setSpacing(5);
 		setComponentPadding(new Insets(5, 5, 0, 5));
@@ -171,12 +167,17 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	private void initWorkspaceListener(){
 		parentProperty().addListener((observable, oldValue, newValue)->{
-			if(oldValue instanceof BlockWorkspaceHolder)
-				((BlockWorkspaceHolder)oldValue).workspaceProperty().removeListener(workspaceListener);
-			if(newValue instanceof BlockWorkspaceHolder){
-				BlockWorkspaceHolder holder = (BlockWorkspaceHolder)newValue;
-				setWorkspace(holder.workspaceProperty().get());
-				holder.workspaceProperty().addListener(workspaceListener);
+			if(newValue instanceof BlockWorkspaceHolder)
+				workspacePropertyImpl().bind(((BlockWorkspaceHolder)newValue).workspaceProperty());
+			else
+				workspacePropertyImpl().unbind();
+		});
+	}
+	
+	private void initBlockChangeListener() {
+		blockProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null && oldValue != null) {
+				oldValue.addToWorkspace(10, 10);
 			}
 		});
 	}

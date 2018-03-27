@@ -51,7 +51,8 @@ public interface FXBlockRenderer {
 			svgBuilder.v(y + FXBlockConstant.LEFT_OFFSET_Y)
 					.h(alignedRenderWidth - FXBlockConstant.LEFT_WIDTH)
 					.v(y + FXBlockConstant.LEFT_OFFSET_Y + FXBlockConstant.LEFT_HEIGHT)
-					.h(alignedRenderWidth);
+					.h(alignedRenderWidth)
+					.v(y + Math.max(componentHeight, row.getBlockHeight()));
 			break;
 		case BRANCH:
 			svgBuilder.v(y)

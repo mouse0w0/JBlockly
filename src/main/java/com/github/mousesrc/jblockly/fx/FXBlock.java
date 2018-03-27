@@ -17,7 +17,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
@@ -27,6 +26,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
@@ -62,6 +63,15 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	public boolean isMovable() {return movable == null ? true : movableProperty().get();}
 	public final void setMovable(boolean value) {movableProperty().set(value);}
 	
+	public final BooleanProperty foldedProperty() {
+		if (folded == null) 
+			folded = new SimpleBooleanProperty(this, "folded");
+		return folded;
+	}
+	private BooleanProperty folded;
+	public boolean isFolded() {return folded == null ? false : foldedProperty().get();}
+	public final void setFolded(boolean value) {foldedProperty().set(value);}
+	
 	public final StringProperty nameProperty(){
 		if(name == null)
 			name = new SimpleStringProperty(this, "name");
@@ -70,6 +80,24 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private StringProperty name;
 	public final String getName() {return name == null ? null : nameProperty().get();}
 	public final void setName(String name) {nameProperty().set(name);}
+	
+	public final ObjectProperty<Paint> fillProperty(){
+		if(fill == null)
+			fill = new SimpleObjectProperty<Paint>(this, "fill", Color.WHITE);
+		return fill;
+	}
+	private ObjectProperty<Paint> fill;
+	public final Paint getFill() {return fill == null ? Color.WHITE : fill.get();}
+	public final void setFill(Paint value) {fillProperty().set(value);}
+	
+	public final ObjectProperty<Paint> strokeProperty(){
+		if(stroke == null)
+			stroke = new SimpleObjectProperty<Paint>(this, "stroke", Color.BLACK);
+		return stroke;
+	}
+	private ObjectProperty<Paint> stroke;
+	public final Paint getStroke() {return stroke == null ? Color.BLACK : stroke.get();}
+	public final void setStroke(Paint value) {strokeProperty().set(value);}
 	
 	private ReadOnlyBooleanWrapper movingPropertyImpl() {
 		if(moving == null)
@@ -89,8 +117,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
 	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspacePropertyImpl().getReadOnlyProperty();}
-	private void setWorkspace(FXBlockWorkspace workspace) {workspacePropertyImpl().set(workspace);}
-	private final ChangeListener<FXBlockWorkspace> workspaceListener = (observable, oldValue, newValue)->workspacePropertyImpl().set(newValue);
 	
 	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
 	
@@ -111,7 +137,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		initBlockDragListener();
 		
 		setPickOnBounds(false); // 启用不规则图形判断
-		setSnapToPixel(true);
 	}
 	
 	private double tempOldX, tempOldY;
@@ -130,6 +155,9 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 			Point2D pos = FXHelper.getRelativePos(workspace, this);
 			tempOldX = event.getSceneX() - pos.getX();
 			tempOldY = event.getSceneY() - pos.getY();
+			
+			if (!contains(tempOldX, tempOldY))
+				return;
 			
 			setMoving(true);
 			workspace.setMovingBlockProperty(this);
@@ -161,26 +189,27 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	private void initWorkspaceListener(){
 		parentProperty().addListener((observable, oldValue, newValue)->{
-			if(oldValue instanceof BlockWorkspaceHolder)
-				((BlockWorkspaceHolder)oldValue).workspaceProperty().removeListener(workspaceListener);
-			if(newValue instanceof BlockWorkspaceHolder){
-				BlockWorkspaceHolder holder = (BlockWorkspaceHolder)newValue;
-				setWorkspace(holder.workspaceProperty().get());
-				holder.workspaceProperty().addListener(workspaceListener);
-			}else{
-				setWorkspace(null);
-			}
+			if(newValue instanceof BlockWorkspaceHolder)
+				workspacePropertyImpl().bind(((BlockWorkspaceHolder)newValue).workspaceProperty());
+			else
+				workspacePropertyImpl().unbind();
 		});
 	}
 	
 	public void addToWorkspace() {
+		addToWorkspace(0, 0);
+	}
+	
+	public void addToWorkspace(double offestX, double offestY) {
 		if (getParent() instanceof FXBlockWorkspace) {
 			toFront();
+			setLayoutX(getLayoutX() + offestX);
+			setLayoutY(getLayoutY() + offestY);
 		} else {
 			Point2D pos = FXHelper.getRelativePos(getWorkspace(), this);
 			getWorkspace().getBlocks().add(this);
-			setLayoutX(pos.getX());
-			setLayoutY(pos.getY());
+			setLayoutX(pos.getX() + offestX);
+			setLayoutY(pos.getY() + offestY);
 		}
 	}
 	
@@ -226,7 +255,7 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 		if (!getBoundsInParent().intersects(bounds))
 			return ConnectionResult.FAILURE;
 		
-		Bounds subBounds = FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY());
+		final Bounds subBounds = FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY());
 		for(FXBlockRow row : getFXRows()) {
 			ConnectionResult result = row.connect(block, subBounds);
 			if(result != ConnectionResult.FAILURE)

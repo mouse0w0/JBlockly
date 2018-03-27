@@ -33,10 +33,11 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 
 	private void initRenderSVG() {
 		renderSVGPath = new SVGPath();
+		renderSVGPath.getStyleClass().setAll("background");
+		renderSVGPath.fillProperty().bind(getSkinnable().fillProperty());
+		renderSVGPath.strokeProperty().bind(getSkinnable().strokeProperty());
 		getChildren().add(renderSVGPath);
 		getSkinnable().setDragSVGPath(renderSVGPath);
-		renderSVGPath.setFill(Color.WHITE);
-		renderSVGPath.setStroke(Color.BLACK);
 	}
 
 	private void initComponentsListener() {
