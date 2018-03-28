@@ -13,7 +13,6 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 
 public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
@@ -28,7 +27,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 		components = control.getComponents();
 		
-		consumeMouseEvents(false); // Make block drag avaliable.
+		consumeMouseEvents(false); // Make block drag available.
 		
 		initComponentContainer();
 		initBlockListener();
@@ -75,7 +74,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	private void initBlockListener() {
 		FXBlock block = getFXBlock();
 		if(block != null)
-			getChildren().add(getFXBlock());
+			getChildren().add(block);
 		
 		getSkinnable().blockProperty().addListener(blockChangeListener);
 		getChildren().addListener(childrenListener);
@@ -84,7 +83,6 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	private void initComponentContainer() {
 		componentContainer = new HBox();
 		componentContainer.getStyleClass().setAll("component-container");
-		componentContainer.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
 		componentContainer.paddingProperty().bind(getSkinnable().componentPaddingProperty());
 		componentContainer.spacingProperty().bind(getSkinnable().spacingProperty());
 		componentContainer.getChildren().setAll(components);
@@ -112,23 +110,47 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	protected double computeBlockX() {
 		switch (getType()) {
 		case INSERT:
-			return getSkinnable().getAlignedWidth() - FXBlockConstant.LEFT_WIDTH;
+			return getParentBlock().getConnectionType() == ConnectionType.LEFT
+					? getSkinnable().getAlignedWidth() - FXBlockConstant.LEFT_WIDTH * 2
+					: getSkinnable().getAlignedWidth() - FXBlockConstant.LEFT_WIDTH;
 		case BRANCH:
 			return getSkinnable().getComponentWidth();
-		case NEXT:
-			return 0;
 		default:
 			return 0;
 		}
 	}
-
+	
+	@Override
+	protected double computeMinWidth(double height, double topInset, double rightInset, double bottomInset,
+			double leftInset) {
+		return computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
+	}
+	
+	@Override
+	protected double computeMaxWidth(double height, double topInset, double rightInset, double bottomInset,
+			double leftInset) {
+		return computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
+	}
+	
 	@Override
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
 		FXBlock block = getFXBlock();
-		return block == null ? computeComponentContainerWidth() : computeBlockX() + computeChildPrefAreaWidth(block);
+		return block == null ? computeComponentContainerWidth() : block.getLayoutX() + computeChildPrefAreaWidth(block);
 	}
 
+	@Override
+	protected double computeMinHeight(double width, double topInset, double rightInset, double bottomInset,
+			double leftInset) {
+		return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
+	}
+	
+	@Override
+	protected double computeMaxHeight(double width, double topInset, double rightInset, double bottomInset,
+			double leftInset) {
+		return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
+	}
+	
 	@Override
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
@@ -145,14 +167,13 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		double top = contentY;
 		double left = contentX;
 
-		double width = computeChildPrefAreaWidth(componentContainer), height = computeChildPrefAreaHeight(componentContainer);
+		final double width = computeComponentContainerWidth(), height = computeComponentContainerHeight();
 		layoutInArea(componentContainer, left, top, width, height, -1, null, HPos.LEFT, VPos.TOP);
 		left += width;
 
 		FXBlock block = getFXBlock();
 		if (block != null && block.isManaged()) {
-			layoutInArea(block, computeBlockX(), 0, computeChildPrefAreaWidth(block),
-					computeChildPrefAreaHeight(block), -1, HPos.LEFT, VPos.TOP);
+			layoutInArea(block, computeBlockX(), 0, block.prefWidth(-1), block.prefHeight(-1), -1, HPos.LEFT, VPos.TOP);
 		}
 
 		performingLayout = false;
@@ -171,6 +192,8 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		components.removeListener(componentsListener);
 		getSkinnable().blockProperty().removeListener(blockChangeListener);
 		getChildren().removeListener(childrenListener);
+		componentContainer.paddingProperty().unbind();
+		componentContainer.spacingProperty().unbind();
 		components = null;
 		super.dispose();
 	}

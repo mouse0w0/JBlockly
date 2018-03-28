@@ -49,29 +49,27 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	public final ObjectProperty<Type> typeProperty() {
 		if(type == null)
-			type = new SimpleObjectProperty<Type>(this, "type"){
+			type = new SimpleObjectProperty<Type>(this, "type", Type.NONE){
+				@Override
+				public void set(Type newValue) {
+					super.set(newValue == null ? Type.NONE : newValue);
+				}
+				
 				@Override
 				protected void invalidated() {
+					needUpdateConnectBounds = true;
 					requestLayout();
 				}
 			};
 		return type;
 	}
 	private ObjectProperty<Type> type;
-	public final Type getType() { 
-		Type t = type == null ? Type.NONE : typeProperty().get();
-		return t == null ? Type.NONE : t;
-	}
+	public final Type getType() { return type == null ? Type.NONE : type.get();}
 	public final void setType(Type type) {typeProperty().set(type);}
 	
 	public final ObjectProperty<FXBlock> blockProperty() {
 		if(block == null)
-			block = new SimpleObjectProperty<FXBlock>(this, "block"){
-				@Override
-				protected void invalidated() {
-					requestLayout();
-				}
-			};
+			block = new SimpleObjectProperty<FXBlock>(this, "block");
 		return block;
 	}
 	private ObjectProperty<FXBlock> block;
@@ -127,28 +125,30 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	protected final void setComponentHeight(double componentHeight) {this.componentHeight = componentHeight;}
 	
 	private Bounds connectBounds;
+	private boolean needUpdateConnectBounds = true;
 	protected Bounds getConnectBounds() {
-		if (connectBounds == null) {
-			final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
-					componentWidth = getComponentWidth();
-			switch (getType()) {
-			case INSERT:
-				connectBounds = new BoundingBox(x + alignedRenderWidth, y + FXBlockConstant.LEFT_OFFSET_Y,
-						FXBlockConstant.LEFT_WIDTH, FXBlockConstant.LEFT_HEIGHT);
-				break;
-			case BRANCH:
-				connectBounds = new BoundingBox(x + componentWidth + FXBlockConstant.TOP_OFFSET_X, y,
-						FXBlockConstant.TOP_WIDTH, FXBlockConstant.TOP_HEIGHT);
-				break;
-			case NEXT:
-				connectBounds = new BoundingBox(x + FXBlockConstant.TOP_OFFSET_X, y, FXBlockConstant.TOP_WIDTH,
-						FXBlockConstant.TOP_HEIGHT);
-				break;
-			case NONE:
-				break;
-			}
+		if (needUpdateConnectBounds) {
+			connectBounds = computeConnectBounds();
+			needUpdateConnectBounds = false;
 		}
 		return connectBounds;
+	}
+	protected Bounds computeConnectBounds() {
+		final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
+				componentWidth = getComponentWidth();
+		switch (getType()) {
+		case INSERT:
+			return new BoundingBox(x + alignedRenderWidth - FXBlockConstant.LEFT_WIDTH, y + FXBlockConstant.LEFT_OFFSET_Y,
+					FXBlockConstant.LEFT_WIDTH, FXBlockConstant.LEFT_HEIGHT);
+		case BRANCH:
+			return new BoundingBox(x + componentWidth + FXBlockConstant.TOP_OFFSET_X, y,
+					FXBlockConstant.TOP_WIDTH, FXBlockConstant.TOP_HEIGHT);
+		case NEXT:
+			return new BoundingBox(x + FXBlockConstant.TOP_OFFSET_X, y, FXBlockConstant.TOP_WIDTH,
+					FXBlockConstant.TOP_HEIGHT);
+		default:
+			return null;
+		}
 	}
 	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
@@ -260,6 +260,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 	
 	protected double getBlockHeight(){
 		FXBlock block = getFXBlock();
-		return block == null ? 0 : block.getHeight();
+		return block == null ? 0 : snapSize(block.prefHeight(-1));
 	}
 }

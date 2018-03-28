@@ -7,4 +7,6 @@ public interface BlockInputer<T> {
 	String getName();
 	
 	Optional<T> getInputValue();
+	
+	void setInputValue(T value);
 }

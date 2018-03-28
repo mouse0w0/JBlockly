@@ -56,6 +56,7 @@ public class Demo extends Application{
 		block2.setConnectionType(ConnectionType.LEFT);
 		
 		FXBlockRow blockRow4 = new FXBlockRow();
+		blockRow4.setType(Type.INSERT);
 		blockRow4.getComponents().addAll(new Label("233333333333"));
 		
 		block2.getFXRows().addAll(blockRow4);
@@ -72,8 +73,11 @@ public class Demo extends Application{
 		FXBlockRow blockRow6 = new FXBlockRow();
 		blockRow6.setType(Type.INSERT);
 		blockRow6.getComponents().addAll(new Label("233333333333"));
+		
+		FXBlockRow blockRow8 = new FXBlockRow();
+		blockRow8.setType(Type.NEXT);
 	
-		block3.getFXRows().addAll(blockRow5,blockRow6);
+		block3.getFXRows().addAll(blockRow5,blockRow6,blockRow8);
 		return block3;
 	}
 }

@@ -37,7 +37,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	public final ObjectProperty<ConnectionType> connectionTypeProperty(){
 		if(connectionType == null)
 			connectionType = new SimpleObjectProperty<ConnectionType>(this, "connection") {
-
 				@Override
 				public void set(ConnectionType newValue) {
 					super.set(newValue == null ? ConnectionType.NONE : newValue);
@@ -65,7 +64,12 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	public final BooleanProperty foldedProperty() {
 		if (folded == null) 
-			folded = new SimpleBooleanProperty(this, "folded");
+			folded = new SimpleBooleanProperty(this, "folded") {
+				@Override
+				protected void invalidated() {
+					requestLayout();
+				}
+			};
 		return folded;
 	}
 	private BooleanProperty folded;
