@@ -262,4 +262,10 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		FXBlock block = getFXBlock();
 		return block == null ? 0 : snapSize(block.prefHeight(-1));
 	}
+	
+	@Override
+	public void relocate(double x, double y) {
+		super.relocate(x, y);
+		needUpdateConnectBounds = true;
+	}
 }
