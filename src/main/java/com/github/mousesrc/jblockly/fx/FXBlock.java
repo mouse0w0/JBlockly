@@ -1,10 +1,6 @@
 package com.github.mousesrc.jblockly.fx;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-import com.github.mousesrc.jblockly.api.Block;
-import com.github.mousesrc.jblockly.api.BlockRow;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
 import javafx.beans.property.BooleanProperty;
@@ -32,7 +28,7 @@ import javafx.scene.shape.SVGPath;
 
 import static com.github.mousesrc.jblockly.fx.FXBlockConstant.*;
 
-public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Connectable{
+public class FXBlock extends Control implements BlockWorkspaceHolder, Connectable{
 	
 	public final ObjectProperty<ConnectionType> connectionTypeProperty(){
 		if(connectionType == null)
@@ -239,16 +235,6 @@ public class FXBlock extends Control implements Block, BlockWorkspaceHolder, Con
 	
 	public ObservableList<FXBlockRow> getFXRows() {
 		return fxRows;
-	}
-	
-	@Override
-	public String getBlockName() {
-		return getName();
-	}
-
-	@Override
-	public List<BlockRow> getRows() {
-		return new ArrayList<>(fxRows);
 	}
 	
 	@Override

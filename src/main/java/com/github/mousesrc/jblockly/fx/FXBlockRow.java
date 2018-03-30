@@ -1,13 +1,6 @@
 package com.github.mousesrc.jblockly.fx;
 
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import com.github.mousesrc.jblockly.api.Block;
-import com.github.mousesrc.jblockly.api.BlockInputer;
-import com.github.mousesrc.jblockly.api.BlockRow;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -26,7 +19,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
-public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolder, Connectable{
+public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connectable{
     
 	public static enum Type{
 		NONE,
@@ -232,19 +225,6 @@ public class FXBlockRow extends Control implements BlockRow, BlockWorkspaceHolde
 		if(child == null)
 			return ConnectionResult.FAILURE;
 		return child.connect(block, FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY()));
-	}
-	
-	@Override
-	public Optional<Block> getBlock() {
-		return Optional.ofNullable(getFXBlock());
-	}
-
-	@Override
-	public List<BlockInputer<?>> getInputers() {
-		return getComponents().stream()
-				.filter(node->node instanceof BlockInputer<?>)
-				.map(node->(BlockInputer<?>)node)
-				.collect(Collectors.toList());
 	}
 	
 	@Override
