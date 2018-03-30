@@ -6,8 +6,8 @@ import javafx.event.EventType;
 
 public class BlockEvent extends Event {
 
-	 public static final EventType<Event> ANY = new EventType<>(Event.ANY, "BLOCK");
-	 
+	public static final EventType<Event> ANY = new EventType<>(Event.ANY, "BLOCK");
+
 	public BlockEvent(EventTarget source, EventType<? extends Event> eventType) {
 		super(source, source, eventType);
 	}

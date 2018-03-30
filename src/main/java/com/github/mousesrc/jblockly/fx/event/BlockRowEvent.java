@@ -6,8 +6,8 @@ import javafx.event.EventType;
 
 public class BlockRowEvent extends Event {
 
-	 public static final EventType<Event> ANY = new EventType<>(Event.ANY, "BLOCK_ROW");
-	 
+	public static final EventType<Event> ANY = new EventType<>(Event.ANY, "BLOCK_ROW");
+
 	public BlockRowEvent(EventTarget source, EventType<? extends Event> eventType) {
 		super(source, source, eventType);
 	}

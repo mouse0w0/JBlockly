@@ -160,7 +160,7 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 				return;
 			
 			setMoving(true);
-			workspace.setMovingBlockProperty(this);
+			workspace.setMovingBlock(this);
 			
 			event.consume();
 		});
@@ -178,7 +178,7 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 			
 			FXBlockWorkspace workspace = getWorkspace();
 			if(workspace != null) {
-				workspace.setMovingBlockProperty(null);
+				workspace.setMovingBlock(null);
 				if(getConnectionType().isConnectable())
 					workspace.connect(this, getConnectionBounds());
 			}

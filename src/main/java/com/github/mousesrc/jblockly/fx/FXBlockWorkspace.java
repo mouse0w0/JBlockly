@@ -22,15 +22,9 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 			movingBlock = new ReadOnlyObjectWrapper<>(this, "movingBlock");
 		return movingBlock;
 	}
-	public final ReadOnlyObjectProperty<FXBlock> movingBlockProperty() {
-		return movingBlockPropertyImpl().getReadOnlyProperty();
-	}
-	public final FXBlock getMovingBlockProperty() {
-		return movingBlock == null ? null : movingBlock.get();
-	}
-	protected final void setMovingBlockProperty(FXBlock block) {
-		movingBlockPropertyImpl().set(block);
-	}
+	public final ReadOnlyObjectProperty<FXBlock> movingBlockProperty() {return movingBlockPropertyImpl().getReadOnlyProperty();}
+	public final FXBlock getMovingBlock() {return movingBlock == null ? null : movingBlock.get();}
+	protected final void setMovingBlock(FXBlock block) {movingBlockPropertyImpl().set(block);}
 	
 	private final ObservableList<FXBlock> blocks = FXCollections.observableArrayList();
 	
