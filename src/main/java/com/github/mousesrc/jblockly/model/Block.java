@@ -1,5 +1,7 @@
 package com.github.mousesrc.jblockly.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ public class Block {
 
 	private String name;
 	private final BiMap<BlockRow, String> rowToNames = HashBiMap.create();
+	private final Map<String, Object> datas = new HashMap<>();
 	
 	public Optional<String> getName() {
 		return Optional.ofNullable(name);
@@ -17,6 +20,10 @@ public class Block {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public BiMap<BlockRow, String> getRowToNames() {
+		return rowToNames;
 	}
 
 	public Set<BlockRow> getRows() {
@@ -59,5 +66,34 @@ public class Block {
 		return rowToNames.containsValue(name);
 	}
 	
-	
+	public Map<String, Object> getData() {
+		return datas;
+	}
+
+	public Set<String> getDataKeys() {
+		return datas.keySet();
+	}
+
+	@SuppressWarnings("unchecked")
+	public <V> Optional<V> getData(String key) {
+		return Optional.ofNullable((V)datas.get(key));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <V> Optional<V> getData(String key, Class<V> type) {
+		Object value = datas.get(key);
+		return type.isAssignableFrom(value.getClass()) ? Optional.of((V) value) : Optional.empty();
+	}
+
+	public <V> void addData(String key, V value) {
+		datas.put(key, value);
+	}
+
+	public void removeData(String key) {
+		datas.remove(key);
+	}
+
+	public boolean containsData(String key) {
+		return datas.containsKey(key);
+	}
 }

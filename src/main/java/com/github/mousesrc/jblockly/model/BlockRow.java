@@ -8,7 +8,7 @@ import java.util.Set;
 public class BlockRow {
 	
 	private Block block;
-	private Map<String, Object> datas = new HashMap<>();
+	private final Map<String, Object> datas = new HashMap<>();
 
 	public Optional<Block> getBlock() {
 		return Optional.ofNullable(block);
@@ -21,9 +21,13 @@ public class BlockRow {
 	public boolean hasBlock() {
 		return block != null;
 	}
+	
+	public Map<String, Object> getData() {
+		return datas;
+	}
 
 	public Set<String> getDataKeys() {
-		return null;
+		return datas.keySet();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -48,5 +52,4 @@ public class BlockRow {
 	public boolean containsData(String key) {
 		return datas.containsKey(key);
 	}
-
 }

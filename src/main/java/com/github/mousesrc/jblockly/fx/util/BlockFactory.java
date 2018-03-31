@@ -6,8 +6,6 @@ public interface BlockFactory {
 	
 	String getName();
 	
-	String getGroup();
-	
 	FXBlock create();
 
 }

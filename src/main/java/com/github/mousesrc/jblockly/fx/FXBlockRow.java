@@ -1,7 +1,11 @@
 package com.github.mousesrc.jblockly.fx;
 
 import java.util.LinkedList;
+
+import com.github.mousesrc.jblockly.fx.input.Inputer;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
+import com.github.mousesrc.jblockly.model.BlockRow;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -247,5 +251,19 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 	public void relocate(double x, double y) {
 		super.relocate(x, y);
 		needUpdateConnectBounds = true;
+	}
+	
+	public BlockRow toModel() {
+		BlockRow row = new BlockRow();
+		FXBlock block = getFXBlock();
+		if (block != null)
+			row.setBlock(block.toModel());
+		for (Node node : getComponents()) {
+			if (node instanceof Inputer<?>) {
+				Inputer<?> inputer = (Inputer<?>) node;
+				row.addData(inputer.getName(), inputer.getValue());
+			}
+		}
+		return row;
 	}
 }

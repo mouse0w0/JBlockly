@@ -2,6 +2,7 @@ package com.github.mousesrc.jblockly.fx;
 
 import java.util.LinkedList;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
+import com.github.mousesrc.jblockly.model.Block;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -262,5 +263,14 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	@Override
 	protected Skin<?> createDefaultSkin() {
 		return new FXBlockSkin(this);
+	}
+	
+	public Block toModel() {
+		Block block = new Block();
+		block.setName(getName());
+		for (FXBlockRow row : getFXRows()) {
+			block.addRow(row.toModel(), row.getName());
+		}
+		return block;
 	}
 }
