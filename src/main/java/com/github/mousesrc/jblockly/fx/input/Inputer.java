@@ -10,6 +10,11 @@ public interface Inputer<T> {
 	
 	void setValue(T value);
 	
+	@SuppressWarnings("unchecked")
+	default void set(Object value) throws ClassCastException {
+		setValue((T)value);
+	}
+	
 	default boolean hasValue() {
 		return getValue() != null;
 	}

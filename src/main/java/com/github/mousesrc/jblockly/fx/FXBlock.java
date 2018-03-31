@@ -3,7 +3,6 @@ package com.github.mousesrc.jblockly.fx;
 import java.util.LinkedList;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import com.github.mousesrc.jblockly.model.Block;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;

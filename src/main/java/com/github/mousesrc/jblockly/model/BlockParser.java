@@ -29,6 +29,14 @@ public class BlockParser {
 		return GSON.fromJson(reader, Block.class);
 	}
 	
+	public static String toJson(Block block) {
+		return GSON.toJson(block);
+	}
+	
+	public static void toJson(Block block, Appendable writer) {
+		GSON.toJson(block, writer);
+	}
+	
 	public static class BlockSerializer implements JsonSerializer<Block>, JsonDeserializer<Block> {
 
 		@Override
