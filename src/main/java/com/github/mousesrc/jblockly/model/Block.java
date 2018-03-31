@@ -12,7 +12,7 @@ public class Block {
 
 	private String name;
 	private final BiMap<BlockRow, String> rowToNames = HashBiMap.create();
-	private final Map<String, Object> datas = new HashMap<>();
+	private final Map<String, Object> properties = new HashMap<>();
 	
 	public Optional<String> getName() {
 		return Optional.ofNullable(name);
@@ -66,34 +66,34 @@ public class Block {
 		return rowToNames.containsValue(name);
 	}
 	
-	public Map<String, Object> getData() {
-		return datas;
+	public Map<String, Object> getProperties() {
+		return properties;
 	}
 
-	public Set<String> getDataKeys() {
-		return datas.keySet();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <V> Optional<V> getData(String key) {
-		return Optional.ofNullable((V)datas.get(key));
+	public Set<String> getPropertyKeys() {
+		return getProperties().keySet();
 	}
 
 	@SuppressWarnings("unchecked")
-	public <V> Optional<V> getData(String key, Class<V> type) {
-		Object value = datas.get(key);
+	public <V> Optional<V> getProperty(String key) {
+		return Optional.ofNullable((V)getProperties().get(key));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <V> Optional<V> getProperty(String key, Class<V> type) {
+		Object value = getProperties().get(key);
 		return type.isAssignableFrom(value.getClass()) ? Optional.of((V) value) : Optional.empty();
 	}
 
-	public <V> void addData(String key, V value) {
-		datas.put(key, value);
+	public <V> void addProperty(String key, V value) {
+		getProperties().put(key, value);
 	}
 
-	public void removeData(String key) {
-		datas.remove(key);
+	public void removeProperty(String key) {
+		getProperties().remove(key);
 	}
 
-	public boolean containsData(String key) {
-		return datas.containsKey(key);
+	public boolean containsProperty(String key) {
+		return getProperties().containsKey(key);
 	}
 }
