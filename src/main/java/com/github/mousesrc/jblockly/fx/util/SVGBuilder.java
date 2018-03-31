@@ -182,6 +182,11 @@ public class SVGBuilder {
 	public SVGBuilder z() {
 		return closePath();
 	}
+	
+	public SVGBuilder clear() {
+		sb.delete(0, sb.length());
+		return this;
+	}
 
 	@Override
 	public String toString() {
