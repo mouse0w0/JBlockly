@@ -37,6 +37,10 @@ public class BlockParser {
 		GSON.toJson(block, writer);
 	}
 	
+	public static JsonElement toJsonTree(Block block) {
+		return GSON.toJsonTree(block);
+	}
+	
 	public static class BlockSerializer implements JsonSerializer<Block>, JsonDeserializer<Block> {
 
 		@Override

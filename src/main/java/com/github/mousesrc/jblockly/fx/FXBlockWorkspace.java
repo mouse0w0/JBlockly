@@ -1,7 +1,6 @@
 package com.github.mousesrc.jblockly.fx;
 
 import java.util.Objects;
-
 import com.github.mousesrc.jblockly.fx.util.BlockRegistry;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
