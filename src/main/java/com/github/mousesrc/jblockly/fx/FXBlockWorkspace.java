@@ -2,6 +2,8 @@ package com.github.mousesrc.jblockly.fx;
 
 import java.util.Objects;
 
+import com.github.mousesrc.jblockly.fx.util.BlockRegistry;
+
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -16,17 +18,27 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace = new ReadOnlyObjectWrapper<FXBlockWorkspace>(this);
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspace.getReadOnlyProperty();}
 
-	private ReadOnlyObjectWrapper<FXBlock> movingBlock;
 	protected final ReadOnlyObjectWrapper<FXBlock> movingBlockPropertyImpl() {
 		if(movingBlock == null)
 			movingBlock = new ReadOnlyObjectWrapper<>(this, "movingBlock");
 		return movingBlock;
 	}
+	private ReadOnlyObjectWrapper<FXBlock> movingBlock;
 	public final ReadOnlyObjectProperty<FXBlock> movingBlockProperty() {return movingBlockPropertyImpl().getReadOnlyProperty();}
 	public final FXBlock getMovingBlock() {return movingBlock == null ? null : movingBlock.get();}
 	protected final void setMovingBlock(FXBlock block) {movingBlockPropertyImpl().set(block);}
 	
 	private final ObservableList<FXBlock> blocks = FXCollections.observableArrayList();
+	
+	public ObservableList<FXBlock> getBlocks(){
+		return blocks;
+	}
+	
+	private final BlockRegistry blockRegistry = new BlockRegistry();
+	
+	public BlockRegistry getBlockRegistry() {
+		return blockRegistry;
+	}
 	
 	private static final String DEFAULT_STYLE_CLASS = "block-workspace";
 	
@@ -69,10 +81,6 @@ public class FXBlockWorkspace extends Region implements BlockWorkspaceHolder, Co
 			}
 			
 		});
-	}
-	
-	public ObservableList<FXBlock> getBlocks(){
-		return blocks;
 	}
 	
 	@Override
