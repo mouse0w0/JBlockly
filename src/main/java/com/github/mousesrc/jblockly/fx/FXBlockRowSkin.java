@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -45,7 +46,6 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 				componentContainer.getChildren().removeAll(c.getRemoved());
 			}
 		}
-
 	};
 	private final ChangeListener<? super FXBlock> blockChangeListener = (observable, oldValue, newValue) -> {
 		if (oldValue != null && !removingBlock) {
@@ -68,8 +68,8 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 					removingBlock = false;
 				}
 		}
-
 	};
+	private final InvalidationListener typeListener = (observable)->updateComponentContainer();
 
 	private void initBlockListener() {
 		FXBlock block = getFXBlock();
@@ -87,7 +87,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		componentContainer.spacingProperty().bind(getSkinnable().spacingProperty());
 		componentContainer.getChildren().setAll(components);
 		components.addListener(componentsListener);
-		getSkinnable().typeProperty().addListener((observable)->updateComponentContainer());
+		getSkinnable().typeProperty().addListener(typeListener);
 		updateComponentContainer();
 		getChildren().add(componentContainer);
 	}
@@ -194,6 +194,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		getChildren().removeListener(childrenListener);
 		componentContainer.paddingProperty().unbind();
 		componentContainer.spacingProperty().unbind();
+		getSkinnable().typeProperty().removeListener(typeListener);
 		components = null;
 		super.dispose();
 	}

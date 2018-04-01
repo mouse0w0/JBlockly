@@ -38,19 +38,20 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		getSkinnable().setDragSVGPath(renderSVGPath);
 	}
 
+	private final ListChangeListener<Node> fxRowsListener = new ListChangeListener<Node>() {
+
+		@Override
+		public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
+			while (c.next()) {
+				getChildren().addAll(c.getAddedSubList());
+				getChildren().removeAll(c.getRemoved());
+			}
+		}
+	};
+	
 	private void initComponentsListener() {
 		getChildren().addAll(getSkinnable().getFXRows());
-		getFXRows().addListener(new ListChangeListener<Node>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
-				while (c.next()) {
-					getChildren().addAll(c.getAddedSubList());
-					getChildren().removeAll(c.getRemoved());
-				}
-			}
-
-		});
+		getFXRows().addListener(fxRowsListener);
 	}
 
 	@Override
@@ -188,6 +189,7 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 	
 	@Override
 	public void dispose() {
+		getFXRows().removeListener(fxRowsListener);
 		renderSVGPath.fillProperty().unbind();
 		renderSVGPath.strokeProperty().unbind();
 		super.dispose();
