@@ -120,6 +120,10 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	
 	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
 	
+	public final ObservableList<FXBlockRow> getFXRows() {
+		return fxRows;
+	}
+	
 	private SVGPath dragSVGPath;
 	protected final SVGPath getDragSVGPath() {
 		return dragSVGPath;
@@ -150,14 +154,15 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 			if (!isMovable())
 				return;
 			
+			Point2D nodePos = localToScene(0, 0);
+			if (!contains(event.getSceneX() - nodePos.getX(), event.getSceneY() - nodePos.getY()))
+				return;
+			
 			addToWorkspace();
 
-			Point2D pos = FXHelper.getRelativePos(workspace, this);
-			tempOldX = event.getSceneX() - pos.getX();
-			tempOldY = event.getSceneY() - pos.getY();
-			
-			if (!contains(tempOldX, tempOldY))
-				return;
+			Point2D workspacePos = workspace.localToScene(0, 0);
+			tempOldX = event.getSceneX() - nodePos.getX() + workspacePos.getX();
+			tempOldY = event.getSceneY() - nodePos.getY() + workspacePos.getY();
 			
 			setMoving(true);
 			workspace.setMovingBlock(this);
@@ -201,15 +206,17 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	}
 	
 	public void addToWorkspace(double offestX, double offestY) {
-		if (getParent() instanceof FXBlockWorkspace) {
+		Parent parent = getParent();
+		if (parent instanceof FXBlockWorkspace) {
 			toFront();
 			setLayoutX(getLayoutX() + offestX);
 			setLayoutY(getLayoutY() + offestY);
 		} else {
-			Point2D pos = FXHelper.getRelativePos(getWorkspace(), this);
+			Point2D nodePos = localToScene(0, 0);
+			Point2D workspacePos = getWorkspace().localToScene(0, 0);
 			getWorkspace().getBlocks().add(this);
-			setLayoutX(pos.getX() + offestX);
-			setLayoutY(pos.getY() + offestY);
+			setLayoutX(nodePos.getX() - workspacePos.getX() + offestX);
+			setLayoutY(nodePos.getY() - workspacePos.getY() + offestY);
 		}
 	}
 	
@@ -221,7 +228,7 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 			((FXBlockWorkspace) parent).getBlocks().remove(this);
 	}
 	
-	public Bounds getConnectionBounds(){
+	protected Bounds getConnectionBounds(){
 		final double x = getLayoutX(), y = getLayoutY();
 		switch (getConnectionType()) {
 		case TOP:
@@ -233,8 +240,8 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 		}
 	}
 	
-	public ObservableList<FXBlockRow> getFXRows() {
-		return fxRows;
+	protected boolean isConnectable(FXBlockRow row) {
+		return true;
 	}
 	
 	@Override

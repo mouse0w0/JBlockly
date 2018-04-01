@@ -2,7 +2,6 @@ package com.github.mousesrc.jblockly.fx;
 
 import java.util.List;
 
-import com.github.mousesrc.jblockly.fx.FXBlockRow.Type;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 
 import javafx.beans.InvalidationListener;
@@ -108,9 +107,9 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	}
 	
 	protected double computeBlockX() {
-		switch (getType()) {
+		switch (getSkinnable().getType()) {
 		case INSERT:
-			return getParentBlock().getConnectionType() == ConnectionType.LEFT
+			return getSkinnable().getParentBlock().getConnectionType() == ConnectionType.LEFT
 					? getSkinnable().getAlignedWidth() - FXBlockConstant.LEFT_WIDTH * 2
 					: getSkinnable().getAlignedWidth() - FXBlockConstant.LEFT_WIDTH;
 		case BRANCH:
@@ -136,7 +135,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
 		FXBlock block = getFXBlock();
-		return block == null ? computeComponentContainerWidth() : block.getLayoutX() + computeChildPrefAreaWidth(block);
+		return block == null ? computeComponentContainerWidth() : block.getLayoutX() + snapSize(block.prefWidth(-1));
 	}
 
 	@Override
@@ -155,7 +154,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset,
 			double leftInset) {
 		FXBlock block = getFXBlock();
-		return Math.max(computeComponentContainerHeight(), block == null ? 0 : computeChildPrefAreaHeight(block));
+		return Math.max(computeComponentContainerHeight(), block == null ? 0 : snapSize(block.prefHeight(-1)));
 	}
 
 	@Override
@@ -173,18 +172,10 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
 		FXBlock block = getFXBlock();
 		if (block != null && block.isManaged()) {
-			layoutInArea(block, computeBlockX(), 0, block.prefWidth(-1), block.prefHeight(-1), -1, HPos.LEFT, VPos.TOP);
+			layoutInArea(block, computeBlockX(), 0, snapSize(block.prefWidth(-1)), snapSize(block.prefHeight(-1)), -1, HPos.LEFT, VPos.TOP);
 		}
 
 		performingLayout = false;
-	}
-
-	private double computeChildPrefAreaWidth(Node child) {
-		return snapSize(FXHelper.boundedSize(child.minWidth(-1), child.prefWidth(-1), child.maxWidth(-1)));
-	}
-
-	private double computeChildPrefAreaHeight(Node child) {
-		return snapSize(FXHelper.boundedSize(child.minHeight(-1), child.prefHeight(-1), child.maxHeight(-1)));
 	}
 
 	@Override
@@ -199,27 +190,27 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 		super.dispose();
 	}
 	
-	protected FXBlock getFXBlock() {
-		return getSkinnable().getFXBlock();
-	}
-
-	protected FXBlock getParentBlock() {
-		return getSkinnable().getParentBlock();
-	}
-	
-	protected Type getType(){
-		return getSkinnable().getType();
-	}
-	
-	private double computeComponentContainerWidth() {
+	protected double computeComponentContainerWidth() {
 		double width = computeChildPrefAreaWidth(componentContainer);
 		getSkinnable().setComponentWidth(width);
 		return width;
 	}
 	
-	private double computeComponentContainerHeight() {
+	protected double computeComponentContainerHeight() {
 		double height = computeChildPrefAreaHeight(componentContainer);
 		getSkinnable().setComponentHeight(height);
 		return height;
+	}
+	
+	private double computeChildPrefAreaWidth(Node child) {
+		return snapSize(FXHelper.boundedSize(child.minWidth(-1), child.prefWidth(-1), child.maxWidth(-1)));
+	}
+
+	private double computeChildPrefAreaHeight(Node child) {
+		return snapSize(FXHelper.boundedSize(child.minHeight(-1), child.prefHeight(-1), child.maxHeight(-1)));
+	}
+	
+	private FXBlock getFXBlock() {
+		return getSkinnable().getFXBlock();
 	}
 }

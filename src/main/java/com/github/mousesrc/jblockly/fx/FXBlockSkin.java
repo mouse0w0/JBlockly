@@ -175,11 +175,11 @@ public class FXBlockSkin extends SkinBase<FXBlock> {
 		return tempArray;
 	}
 	
-	protected ObservableList<FXBlockRow> getFXRows() {
+	private ObservableList<FXBlockRow> getFXRows() {
 		return getSkinnable().getFXRows();
 	}
 
-	protected ConnectionType getConnectionType() {
+	private ConnectionType getConnectionType() {
 		return getSkinnable().getConnectionType();
 	}
 	

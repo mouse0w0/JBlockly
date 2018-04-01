@@ -121,8 +121,14 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 	protected final double getComponentHeight() {return componentHeight;}
 	protected final void setComponentHeight(double componentHeight) {this.componentHeight = componentHeight;}
 	
+	protected final double getBlockHeight() {
+		FXBlock block = getFXBlock();
+		return block == null ? 0 : snapSize(block.prefHeight(-1));
+	}
+
 	private Bounds connectBounds;
 	private boolean needUpdateConnectBounds = true;
+	
 	protected Bounds getConnectBounds() {
 		if (needUpdateConnectBounds) {
 			connectBounds = computeConnectBounds();
@@ -130,6 +136,7 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 		}
 		return connectBounds;
 	}
+	
 	protected Bounds computeConnectBounds() {
 		final double x = getLayoutX(), y = getLayoutY(), alignedRenderWidth = getAlignedWidth(),
 				componentWidth = getComponentWidth();
@@ -149,6 +156,10 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 	}
 	
 	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
+	
+	public final ObservableList<Node> getComponents() {
+		return components;
+	}
 	
 	private static final String DEFAULT_STYLE_CLASS = "block-row";
 	
@@ -179,23 +190,6 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 		});
 	}
 	
-	public ObservableList<Node> getComponents() {
-		return components;
-	}
-	
-	public FXBlock getParentBlock() {
-		return (FXBlock) getParent();
-	}
-
-	public boolean isFirst(){
-		return getParentBlock().getFXRows().indexOf(this) == 0;
-	}
-	
-	public boolean isLast(){
-		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
-		return rows.indexOf(this) == rows.size() - 1;
-	}
-	
 	protected double computeRenderWidth() {
 		switch (getType()) {
 		case BRANCH:
@@ -217,16 +211,18 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 	
 	@Override
 	public ConnectionResult connect(FXBlock block, Bounds bounds) {
-		if(getType() == Type.NONE)
+		if (getType() == Type.NONE)
 			return ConnectionResult.FAILURE;
-		if(getConnectBounds().intersects(bounds)) {
-			if(!isConnectable(block))
+		if (getConnectBounds().intersects(bounds)) {
+			if (isConnectable(block) && block.isConnectable(this)) {
+				setBlock(block);
+				return ConnectionResult.SUCCESSFUL;
+			} else {
 				return ConnectionResult.CANCELLED;
-			setBlock(block);
-			return ConnectionResult.SUCCESSFUL;
+			}
 		}
 		FXBlock child = getFXBlock();
-		if(child == null)
+		if (child == null)
 			return ConnectionResult.FAILURE;
 		return child.connect(block, FXHelper.subtractBounds2D(bounds, this.getLayoutX(), this.getLayoutY()));
 	}
@@ -242,9 +238,17 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 		return nextIndex < rows.size() ? rows.get(nextIndex).getAlignedWidth() : getAlignedWidth();
 	}
 	
-	protected double getBlockHeight(){
-		FXBlock block = getFXBlock();
-		return block == null ? 0 : snapSize(block.prefHeight(-1));
+	public final FXBlock getParentBlock() {
+		return (FXBlock) getParent();
+	}
+
+	public final boolean isFirst(){
+		return getParentBlock().getFXRows().indexOf(this) == 0;
+	}
+	
+	public final boolean isLast(){
+		ObservableList<FXBlockRow> rows = getParentBlock().getFXRows();
+		return rows.indexOf(this) == rows.size() - 1;
 	}
 	
 	@Override
