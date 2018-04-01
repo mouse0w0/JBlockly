@@ -1,5 +1,6 @@
 package com.github.mousesrc.jblockly.fx.util;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class BlockRegistry {
@@ -30,6 +31,10 @@ public class BlockRegistry {
 	public BlockProvider get(String name) {
 		BlockProvider factory = registeredBlocks.get(name);
 		return factory != null ? factory : parent != null ? parent.get(name) : null;
+	}
+	
+	public Collection<BlockProvider> getRegisteredBlocks() {
+		return registeredBlocks.values();
 	}
 
 	public BlockRegistry getParent() {
