@@ -5,14 +5,10 @@ import java.util.Map;
 
 public class BlockRegistry {
 	
-	public static final BlockRegistry GLOBAL_BLOCK_REGISTY = new BlockRegistry(null);
-	
 	private BlockRegistry parent;
 	private Map<String, BlockProvider> registeredBlocks;
 	
-	public BlockRegistry() {
-		this(GLOBAL_BLOCK_REGISTY);
-	}
+	public BlockRegistry() {}
 	
 	public BlockRegistry(BlockRegistry parent) {
 		this.setParent(parent);
