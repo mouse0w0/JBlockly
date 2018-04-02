@@ -3,6 +3,7 @@ package com.github.mousesrc.jblockly.model;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -48,9 +49,11 @@ public class BlockParser {
 				throws JsonParseException {
 			JsonObject object = json.getAsJsonObject();
 			Block block = new Block();
-			block.setName(object.get("name").getAsString());
+			if(object.has("name"))
 			block.getProperties().putAll(context.deserialize(object.get("properties"), Map.class));
-			block.getRowToNames().inverse().putAll(context.deserialize(object.get("rows"), Map.class));
+			JsonObject rows = object.get("rows").getAsJsonObject();
+			for(Entry<String, JsonElement> entry : rows.entrySet())
+				block.getRowToNames().put(context.deserialize(entry.getValue(), BlockRow.class), entry.getKey());
 			return block;
 		}
 
@@ -72,7 +75,8 @@ public class BlockParser {
 				throws JsonParseException {
 			JsonObject object = json.getAsJsonObject();
 			BlockRow row = new BlockRow();
-			row.setBlock(context.deserialize(object.get("block"), Block.class));
+			if(object.has("block"))
+				row.setBlock(context.deserialize(object.get("block"), Block.class));
 			row.getData().putAll(context.deserialize(object.get("data"), Map.class));
 			return row;
 		}
