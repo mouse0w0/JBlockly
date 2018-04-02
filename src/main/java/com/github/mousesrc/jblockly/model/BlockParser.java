@@ -50,6 +50,7 @@ public class BlockParser {
 			JsonObject object = json.getAsJsonObject();
 			Block block = new Block();
 			if(object.has("name"))
+				block.setName(object.get("name").getAsString());
 			block.getProperties().putAll(context.deserialize(object.get("properties"), Map.class));
 			JsonObject rows = object.get("rows").getAsJsonObject();
 			for(Entry<String, JsonElement> entry : rows.entrySet())
