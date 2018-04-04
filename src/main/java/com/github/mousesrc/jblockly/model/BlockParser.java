@@ -51,7 +51,8 @@ public class BlockParser {
 			Block block = new Block();
 			if(object.has("name"))
 				block.setName(object.get("name").getAsString());
-			block.getProperties().putAll(context.deserialize(object.get("properties"), Map.class));
+			if(object.has("properties"))
+				block.getProperties().putAll(context.deserialize(object.get("properties"), Map.class));
 			JsonObject rows = object.get("rows").getAsJsonObject();
 			for(Entry<String, JsonElement> entry : rows.entrySet())
 				block.getRowToNames().put(context.deserialize(entry.getValue(), BlockRow.class), entry.getKey());
@@ -62,7 +63,8 @@ public class BlockParser {
 		public JsonElement serialize(Block src, Type typeOfSrc, JsonSerializationContext context) {
 			JsonObject object = new JsonObject();
 			object.addProperty("name", src.getName().orElse(null));
-			object.add("properties", context.serialize(src.getProperties()));
+			if(src.hasProperties())
+				object.add("properties", context.serialize(src.getProperties()));
 			object.add("rows", context.serialize(src.getRowToNames().inverse()));
 			return object;
 		}
@@ -78,15 +80,18 @@ public class BlockParser {
 			BlockRow row = new BlockRow();
 			if(object.has("block"))
 				row.setBlock(context.deserialize(object.get("block"), Block.class));
-			row.getData().putAll(context.deserialize(object.get("data"), Map.class));
+			if(object.has("data"))
+				row.getDatas().putAll(context.deserialize(object.get("data"), Map.class));
 			return row;
 		}
 
 		@Override
 		public JsonElement serialize(BlockRow src, Type typeOfSrc, JsonSerializationContext context) {
 			JsonObject object = new JsonObject();
-			object.add("data", context.serialize(src.getData()));
-			object.add("block", context.serialize(src.getBlock().orElse(null)));
+			if(src.hasBlock())
+				object.add("block", context.serialize(src.getBlock().get()));
+			if(src.hasData())
+				object.add("data", context.serialize(src.getDatas()));
 			return object;
 		}
 

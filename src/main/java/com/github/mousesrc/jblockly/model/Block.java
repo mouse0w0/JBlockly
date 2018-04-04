@@ -12,7 +12,7 @@ public class Block {
 
 	private String name;
 	private final BiMap<BlockRow, String> rowToNames = HashBiMap.create();
-	private final Map<String, Object> properties = new HashMap<>();
+	private Map<String, Object> properties;
 	
 	public Optional<String> getName() {
 		return Optional.ofNullable(name);
@@ -67,6 +67,8 @@ public class Block {
 	}
 	
 	public Map<String, Object> getProperties() {
+		if(properties == null)
+			properties = new HashMap<>();
 		return properties;
 	}
 
@@ -95,5 +97,9 @@ public class Block {
 
 	public boolean containsProperty(String key) {
 		return getProperties().containsKey(key);
+	}
+	
+	public boolean hasProperties() {
+		return properties != null && !getProperties().isEmpty();
 	}
 }

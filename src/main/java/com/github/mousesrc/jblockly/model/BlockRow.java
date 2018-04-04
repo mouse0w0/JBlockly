@@ -8,7 +8,7 @@ import java.util.Set;
 public class BlockRow {
 	
 	private Block block;
-	private final Map<String, Object> datas = new HashMap<>();
+	private Map<String, Object> datas;
 
 	public Optional<Block> getBlock() {
 		return Optional.ofNullable(block);
@@ -21,35 +21,41 @@ public class BlockRow {
 	public boolean hasBlock() {
 		return block != null;
 	}
-	
-	public Map<String, Object> getData() {
+
+	public Map<String, Object> getDatas() {
+		if(datas == null)
+			datas = new HashMap<>();
 		return datas;
 	}
 
 	public Set<String> getDataKeys() {
-		return datas.keySet();
+		return getDatas().keySet();
 	}
 
 	@SuppressWarnings("unchecked")
-	public <V> Optional<V> getData(String key) {
-		return Optional.ofNullable((V)datas.get(key));
+	public <V> Optional<V> getData(String key) throws ClassCastException {
+		return Optional.ofNullable((V)getDatas().get(key));
 	}
 
 	@SuppressWarnings("unchecked")
 	public <V> Optional<V> getData(String key, Class<V> type) {
-		Object value = datas.get(key);
-		return type.isAssignableFrom(value.getClass()) ? Optional.of((V) value) : Optional.empty();
+		Object value = getDatas().get(key);
+		return value!=null && type.isAssignableFrom(value.getClass()) ? Optional.of((V) value) : Optional.empty();
 	}
 
 	public <V> void addData(String key, V value) {
-		datas.put(key, value);
+		getDatas().put(key, value);
 	}
 
 	public void removeData(String key) {
-		datas.remove(key);
+		getDatas().remove(key);
 	}
 
 	public boolean containsData(String key) {
-		return datas.containsKey(key);
+		return getDatas().containsKey(key);
+	}
+
+	public boolean hasData() {
+		return datas != null && !getDatas().isEmpty();
 	}
 }
