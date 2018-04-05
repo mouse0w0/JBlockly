@@ -5,13 +5,11 @@ import com.github.mousesrc.jblockly.fx.FXBlock;
 import com.github.mousesrc.jblockly.fx.FXBlockRow;
 import com.github.mousesrc.jblockly.fx.FXBlockWorkspace;
 import com.github.mousesrc.jblockly.fx.input.Inputer;
-import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import javafx.scene.Node;
 
 public class WorkspaceStorage {
@@ -67,7 +65,7 @@ public class WorkspaceStorage {
 			JsonObject rows = new JsonObject();
 			for (FXBlockRow row : block.getFXRows()) {
 				String name = row.getName();
-				if (Strings.isNullOrEmpty(name))
+				if (name == null)
 					continue;
 				rows.add(name, FXBlockRowSerializer.saveToJsonTree(row));
 			}
@@ -98,22 +96,30 @@ public class WorkspaceStorage {
 		public static JsonObject saveToJsonTree(FXBlockRow row) {
 			JsonObject object = new JsonObject();
 			FXBlock fxBlock = row.getFXBlock();
-			if (fxBlock != null)
+			if (fxBlock != null) {
 				object.add("block", FXBlockSerializer.saveToJsonTree(fxBlock));
+			}
 			JsonObject datas = new JsonObject();
 			for (Node node : row.getComponents()) {
-				if (node instanceof Inputer<?>) {
-					Inputer<?> inputer = (Inputer<?>) node;
-					if (Strings.isNullOrEmpty(inputer.getName()))
-						continue;
-					JsonObject data = new JsonObject();
-					data.add("type", GSON.toJsonTree(inputer.getValue().getClass()));
-					data.add("value", GSON.toJsonTree(inputer.getValue()));
-					datas.add(inputer.getName(), data);
-				}
+				if (!(node instanceof Inputer<?>))
+					continue;
+				
+				Inputer<?> inputer = (Inputer<?>) node;
+				if (inputer.getName() == null)
+					continue;
+
+				Object value = inputer.getValue();
+				if (value == null)
+					continue;
+
+				JsonObject data = new JsonObject();
+				data.addProperty("type", value.getClass().getName());
+				data.add("value", GSON.toJsonTree(value));
+				datas.add(inputer.getName(), data);
 			}
-			if (datas.size() > 0)
+			if (datas.size() > 0) {
 				object.add("data", datas);
+			}
 			return object;
 		}
 
@@ -124,13 +130,17 @@ public class WorkspaceStorage {
 			if (object.has("data")) {
 				JsonObject datas = object.getAsJsonObject("data");
 				for (Node node : row.getComponents()) {
-					if (node instanceof Inputer<?>) {
-						Inputer<?> inputer = (Inputer<?>) node;
-						if (!Strings.isNullOrEmpty(inputer.getName()) && datas.has(inputer.getName())) {
-							JsonObject data = datas.getAsJsonObject(inputer.getName());
-							Class<?> type = GSON.fromJson(data.get("type"), Class.class);
-							inputer.set(GSON.fromJson(data.get("value"), type));
-						}
+					if (!(node instanceof Inputer<?>))
+						continue;
+					
+					Inputer<?> inputer = (Inputer<?>) node;
+					if (inputer.getName() == null || !datas.has(inputer.getName()))
+						continue;
+
+					JsonObject data = datas.getAsJsonObject(inputer.getName());
+					try {
+						inputer.set(GSON.fromJson(data.get("value"), Class.forName(data.get("type").getAsString())));
+					} catch (ClassNotFoundException ignored) {
 					}
 				}
 			}
