@@ -21,13 +21,13 @@ public class BlockParserTest {
 		Block child = new Block();
 		row1.setBlock(child);
 		
-		row1.addData("data1", 1);
+		row1.getData().add("data1", 1);
 		
 		String json = BlockParser.toJson(root);
 		System.out.println(json);
 		
 		Block deserialized = BlockParser.fromJson(json);
-		int data1 = deserialized.getRow("row1").get().<Number>getData("data1").get().intValue();
+		int data1 = (int)deserialized.getRow("row1").get().getData().get("data1").get();
 		
 		System.out.println(BlockParser.toJson(deserialized));
 	}

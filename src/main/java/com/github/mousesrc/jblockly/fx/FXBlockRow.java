@@ -265,7 +265,7 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 		for (Node node : getComponents()) {
 			if (node instanceof Inputer<?>) {
 				Inputer<?> inputer = (Inputer<?>) node;
-				row.addData(inputer.getName(), inputer.getValue());
+				row.getData().add(inputer.getName(), inputer.getValue());
 			}
 		}
 		return row;

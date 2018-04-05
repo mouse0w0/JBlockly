@@ -5,6 +5,8 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.github.mousesrc.jblockly.util.DataContainer;
+import com.github.mousesrc.jblockly.util.DataContainer.DataContainerSerializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -20,6 +22,7 @@ public class BlockParser {
 	public static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(Block.class, new BlockSerializer())
 			.registerTypeAdapter(BlockRow.class, new BlockRowSerializer())
+			.registerTypeAdapter(DataContainer.class, new DataContainerSerializer())
 			.create();
 	
 	public static Block fromJson(String json) {
@@ -81,7 +84,7 @@ public class BlockParser {
 			if(object.has("block"))
 				row.setBlock(context.deserialize(object.get("block"), Block.class));
 			if(object.has("data"))
-				row.getDatas().putAll(context.deserialize(object.get("data"), Map.class));
+				row.getData().getDatas().putAll(context.<DataContainer>deserialize(object.get("data"), DataContainer.class).getDatas());
 			return row;
 		}
 
@@ -90,8 +93,8 @@ public class BlockParser {
 			JsonObject object = new JsonObject();
 			if(src.hasBlock())
 				object.add("block", context.serialize(src.getBlock().get()));
-			if(src.hasData())
-				object.add("data", context.serialize(src.getDatas()));
+			if(!src.getData().isEmpty())
+				object.add("data", context.serialize(src.getData()));
 			return object;
 		}
 
