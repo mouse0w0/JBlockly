@@ -1,12 +1,13 @@
 package com.github.mousesrc.jblockly.fx.util;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BlockRegistry {
 	
 	private BlockRegistry parent;
-	private Map<String, BlockProvider> registeredBlocks;
+	private final Map<String, BlockProvider> registeredBlocks = new HashMap<>();
 	
 	public BlockRegistry() {}
 	
@@ -25,8 +26,8 @@ public class BlockRegistry {
 	}
 	
 	public BlockProvider get(String name) {
-		BlockProvider factory = registeredBlocks.get(name);
-		return factory != null ? factory : parent != null ? parent.get(name) : null;
+		BlockProvider provider = registeredBlocks.get(name);
+		return provider != null ? provider : parent != null ? parent.get(name) : null;
 	}
 	
 	public Collection<BlockProvider> getRegisteredBlocks() {
