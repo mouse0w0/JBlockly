@@ -169,6 +169,8 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 		initWorkspaceListener();
 		initBlockChangeListener();
 		
+		setPickOnBounds(false);
+		
 		setSpacing(5);
 		setComponentPadding(new Insets(5, 5, 0, 5));
 	}
@@ -269,5 +271,10 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 			}
 		}
 		return row;
+	}
+	
+	@Override
+	public boolean contains(double localX, double localY) {
+		return false;
 	}
 }
