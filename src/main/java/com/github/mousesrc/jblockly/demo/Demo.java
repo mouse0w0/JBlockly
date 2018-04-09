@@ -77,7 +77,7 @@ public class Demo extends Application{
 		FXBlockRow blockRow8 = new FXBlockRow();
 		blockRow8.setType(Type.NEXT);
 	
-		block3.getFXRows().addAll(blockRow5,blockRow6,blockRow8);
+		block3.getFXRows().addAll(blockRow5,blockRow6);
 		return block3;
 	}
 }
