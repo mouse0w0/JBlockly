@@ -26,7 +26,7 @@ public interface FXBlockConstant {
 	Bounds NEXT_ROW_CONNECTION_BOUNDS = new BoundingBox(TOP_OFFSET_X, 0, TOP_WIDTH, TOP_HEIGHT);
 
 	// 
-	double BLOCK_ROW_MIN_WIDTH = 100;
+	double BLOCK_ROW_MIN_WIDTH = 50;
 	double BLOCK_ROW_MIN_HEIGHT = 30;
 	
 	double NEXT_ROW_MIN_HEIGHT = 10;
