@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import com.github.mousesrc.jblockly.fx.FXBlock;
+
 public abstract class BlockProviderBase implements BlockProvider{
 
 	private final String name;
@@ -49,5 +51,11 @@ public abstract class BlockProviderBase implements BlockProvider{
 
 	public boolean containsProperty(String key) {
 		return getProperties().containsKey(key);
+	}
+	
+	protected FXBlock preCreate() {
+		FXBlock block = new FXBlock();
+		block.setName(getName());
+		return block;
 	}
 }

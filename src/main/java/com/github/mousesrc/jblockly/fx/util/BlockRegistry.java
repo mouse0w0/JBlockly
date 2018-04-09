@@ -14,14 +14,14 @@ public class BlockRegistry {
 		this.setParent(parent);
 	}
 	
-	public void register(BlockProvider factory) {
-		if(get(factory.getName()) != null)
+	public void register(BlockProvider provider) {
+		if(get(provider.getName()) != null)
 			throw new IllegalArgumentException();
-		registeredBlocks.put(factory.getName(), factory);
+		registeredBlocks.put(provider.getName(), provider);
 	}
 	
-	public void unregister(BlockProvider factory) {
-		registeredBlocks.remove(factory.getName());
+	public void unregister(BlockProvider provider) {
+		registeredBlocks.remove(provider.getName());
 	}
 	
 	public BlockProvider get(String name) {
