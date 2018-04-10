@@ -25,6 +25,7 @@ public class WorkspaceStorage {
 	}
 
 	public static void loadFromJsonTree(FXBlockWorkspace workspace, JsonElement element) {
+		workspace.getBlocks().clear();
 		JsonObject object = element.getAsJsonObject();
 		JsonArray blocks = object.get("blocks").getAsJsonArray();
 		for (JsonElement blockElement : blocks) {
@@ -62,6 +63,7 @@ public class WorkspaceStorage {
 		public static JsonObject saveToJsonTree(FXBlock block) {
 			JsonObject object = new JsonObject();
 			object.addProperty("name", block.getName());
+			
 			JsonObject rows = new JsonObject();
 			for (FXBlockRow row : block.getFXRows()) {
 				String name = row.getName();
@@ -81,11 +83,11 @@ public class WorkspaceStorage {
 			if (provider == null)
 				return null;
 
-			JsonObject rows = object.getAsJsonObject("rows");
 			FXBlock block = provider.create();
+			JsonObject rows = object.getAsJsonObject("rows");
 			for (FXBlockRow row : block.getFXRows())
-				if (rows.has(row.getName()))
-					FXBlockRowSerializer.loadFromJsonTree(workspace, row, object);
+				if (row.getName() != null && rows.has(row.getName()))
+					FXBlockRowSerializer.loadFromJsonTree(workspace, row, rows.getAsJsonObject(row.getName()));
 
 			return block;
 		}
