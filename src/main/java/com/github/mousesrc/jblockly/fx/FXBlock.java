@@ -15,6 +15,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -63,6 +64,7 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 			folded = new SimpleBooleanProperty(this, "folded") {
 				@Override
 				protected void invalidated() {
+					pseudoClassStateChanged(PSEUDO_CLASS_FOLDED, get());
 					requestLayout();
 				}
 			};
@@ -71,6 +73,20 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	private BooleanProperty folded;
 	public boolean isFolded() {return folded == null ? false : foldedProperty().get();}
 	public final void setFolded(boolean value) {foldedProperty().set(value);}
+	
+	public final BooleanProperty defaultBlockProperty() {
+		if (defaultBlock == null) 
+			defaultBlock = new SimpleBooleanProperty(this, "defaultBlock") {
+				@Override
+				protected void invalidated() {
+					pseudoClassStateChanged(PSEUDO_CLASS_DEFAULT, get());
+				}
+			};
+		return defaultBlock;
+	}
+	private BooleanProperty defaultBlock;
+	public boolean isDefaultBlock() {return defaultBlock == null ? false : defaultBlockProperty().get();}
+	public final void setDefaultBlock(boolean value) {defaultBlockProperty().set(value);}
 	
 	public final StringProperty nameProperty(){
 		if(name == null)
@@ -101,7 +117,12 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	
 	private ReadOnlyBooleanWrapper movingPropertyImpl() {
 		if(moving == null)
-			moving = new ReadOnlyBooleanWrapper(this, "moving");
+			moving = new ReadOnlyBooleanWrapper(this, "moving") {
+				@Override
+				protected void invalidated() {
+					pseudoClassStateChanged(PSEUDO_CLASS_MOVING, get());
+				}
+			};
 		return moving;
 	}
 	private ReadOnlyBooleanWrapper moving;
@@ -279,4 +300,8 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 		}
 		return block;
 	}
+	
+	private static final PseudoClass PSEUDO_CLASS_MOVING = PseudoClass.getPseudoClass("moving");
+	private static final PseudoClass PSEUDO_CLASS_FOLDED = PseudoClass.getPseudoClass("folded");
+	private static final PseudoClass PSEUDO_CLASS_DEFAULT = PseudoClass.getPseudoClass("default");
 }
