@@ -1,18 +1,18 @@
 package com.github.mousesrc.jblockly.fx;
 
-import java.util.List;
-
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.HBox;
+
+import java.util.List;
 
 public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 
@@ -82,6 +82,7 @@ public class FXBlockRowSkin extends SkinBase<FXBlockRow> {
 	private void initComponentContainer() {
 		componentContainer = new HBox();
 		componentContainer.getStyleClass().setAll("component-container");
+		componentContainer.setAlignment(Pos.CENTER_LEFT);
 		componentContainer.paddingProperty().bind(getSkinnable().componentPaddingProperty());
 		componentContainer.spacingProperty().bind(getSkinnable().spacingProperty());
 		componentContainer.getChildren().setAll(components);
