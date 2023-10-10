@@ -1,19 +1,9 @@
 package com.github.mousesrc.jblockly.fx;
 
-import java.util.LinkedList;
-
 import com.github.mousesrc.jblockly.fx.input.Inputer;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import com.github.mousesrc.jblockly.model.BlockRow;
-
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
@@ -154,8 +144,8 @@ public class FXBlockRow extends Control implements BlockWorkspaceHolder, Connect
 			return null;
 		}
 	}
-	
-	private final ObservableList<Node> components = FXCollections.observableList(new LinkedList<>());
+
+	private final ObservableList<Node> components = FXCollections.observableArrayList();
 	
 	public final ObservableList<Node> getComponents() {
 		return components;

@@ -1,18 +1,8 @@
 package com.github.mousesrc.jblockly.fx;
 
-import java.util.LinkedList;
 import com.github.mousesrc.jblockly.fx.util.FXHelper;
 import com.github.mousesrc.jblockly.model.Block;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -138,8 +128,8 @@ public class FXBlock extends Control implements BlockWorkspaceHolder, Connectabl
 	private ReadOnlyObjectWrapper<FXBlockWorkspace> workspace;
 	public final FXBlockWorkspace getWorkspace() {return workspace == null ? null : workspace.get();}
 	public final ReadOnlyObjectProperty<FXBlockWorkspace> workspaceProperty() {return workspacePropertyImpl().getReadOnlyProperty();}
-	
-	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableList(new LinkedList<>());
+
+	private final ObservableList<FXBlockRow> fxRows = FXCollections.observableArrayList();
 	
 	public final ObservableList<FXBlockRow> getFXRows() {
 		return fxRows;
